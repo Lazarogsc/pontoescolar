@@ -280,11 +280,284 @@
   color: var(--texto-suave);
 }
 
+
+/* ---------- Grades extras ---------- */
+.grade2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.grade3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.pilha {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* ---------- Barras horizontais (rankings) ---------- */
+.barras {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.barrasTopo {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.barrasTopo strong {
+  color: var(--marinho);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.trilho {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--nevoa);
+  overflow: hidden;
+}
+
+.trilho span {
+  display: block;
+  height: 100%;
+  min-width: 4px;
+  border-radius: 999px;
+  background: var(--ponto);
+}
+
+.trilho .preenchimentoAlerta {
+  background: var(--alerta);
+}
+
+.barras small {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* ---------- Filtro de período ---------- */
+.periodo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+}
+
+.periodo .abas {
+  margin: 0;
+}
+
+.intervalo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+.intervalo label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.intervalo input {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: var(--branco);
+  font-size: 13px;
+}
+
+.intervalo .btn,
+.btnPequeno {
+  height: 34px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+/* ---------- Formulários ---------- */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.secao {
+  border: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.secao h3 {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px 14px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--marinho);
+}
+
+.campoLargo {
+  grid-column: 1 / -1;
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: var(--branco);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--texto);
+}
+
+.campo textarea {
+  height: auto;
+  min-height: 72px;
+  padding: 10px 12px;
+  font: inherit;
+  font-weight: 400;
+  resize: vertical;
+}
+
+.campo input[type="file"] {
+  padding: 7px 10px;
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+  outline: 2px solid var(--ceu);
+  outline-offset: 0;
+  border-color: var(--ponto);
+}
+
+.campo small {
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+
+.rodapeForm {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 14px;
+  border-top: 1px solid var(--borda);
+}
+
+.avisoOk,
+.avisoErro {
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.avisoOk {
+  background: var(--sucesso-claro);
+  color: var(--sucesso);
+}
+
+.avisoErro {
+  background: var(--alerta-claro);
+  color: var(--alerta);
+}
+
+/* ---------- Destaques ---------- */
+.destaque {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 22px;
+  border-radius: var(--raio);
+  background: var(--marinho);
+  color: var(--branco);
+}
+
+.destaque span {
+  font-size: 13px;
+  color: rgb(255 255 255 / 70%);
+}
+
+.destaque strong {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 34px;
+  letter-spacing: 0.02em;
+}
+
+.dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 18px;
+  font-size: 14px;
+}
+
+.dl dt {
+  color: var(--texto-suave);
+}
+
+.dl dd {
+  font-weight: 600;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.positivo {
+  color: var(--sucesso);
+}
+
+.negativo {
+  color: var(--alerta);
+}
+
 @media (max-width: 960px) {
   .kpis {
     grid-template-columns: repeat(2, 1fr);
   }
-  .grade {
+  .grade,
+  .grade2,
+  .grade3 {
     grid-template-columns: 1fr;
   }
 }

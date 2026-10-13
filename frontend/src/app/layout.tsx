@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Manrope } from "next/font/google";
-import { Sidebar } from "@/components/Sidebar";
-import styles from "./layout.module.css";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -19,18 +17,13 @@ export const metadata: Metadata = {
     default: "ponto.escolar",
     template: "%s · ponto.escolar",
   },
-  description: "Gestão escolar da pontodevelop: alunos, turmas, diário, mensalidades e comunicados.",
+  description: "Gestão escolar da pontodevelop: secretaria, matrículas, diretoria, portal do responsável e Meu RH.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="pt-BR" className={`${manrope.variable} ${jetbrains.variable}`}>
-      <body>
-        <div className={styles.app}>
-          <Sidebar />
-          <main className={styles.conteudo}>{children}</main>
-        </div>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

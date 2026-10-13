@@ -1,0 +1,37 @@
+.hoje {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.batidas {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.batidas li {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  border: 1px dashed var(--borda);
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.batidas li strong {
+  font-size: 18px;
+  color: var(--texto-suave);
+}
+
+.batidas .feita {
+  border-style: solid;
+  border-color: var(--ceu);
+  background: var(--ponto-claro);
+}
+
+.batidas .feita strong {
+  color: var(--marinho);
+}

@@ -1,0 +1,32 @@
+.app {
+  display: grid;
+  grid-template-columns: var(--sidebar) minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.coluna {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Usa a largura toda da tela; o limite só evita linhas de texto enormes em monitores muito largos. */
+.conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 1920px;
+  padding: 24px 32px 40px;
+  min-width: 0;
+}
+
+@media (max-width: 960px) {
+  .app {
+    /* minmax(0, …): o menu em linha rola sozinho em vez de alargar a página */
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .conteudo {
+    padding: 16px 16px 32px;
+  }
+}

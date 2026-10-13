@@ -1,14 +1,19 @@
 import Link from "next/link";
 import { Chart } from "@/components/Chart";
 import { Cabecalho, Cartao, Kpis, ui } from "@/components/ui";
+import { redirect } from "next/navigation";
 import { api, formatarNumero } from "@/lib/api";
+import { pode, telaInicial, usuarioAtual } from "@/lib/sessao";
 
 export default async function PainelPage() {
+  const u = await usuarioAtual();
+  // O painel é da secretaria; quem não é vai direto para a sua área.
+  if (!pode(u, "secretaria")) redirect(telaInicial(u));
   const painel = await api.painel();
 
   return (
     <>
-      <Cabecalho titulo="Olá, Secretaria" subtitulo={`Visão geral do ano letivo ${painel.ano_letivo} — ${painel.bimestre}`} />
+      <Cabecalho titulo={`Olá, ${u.nome.split(" ")[0]}`} subtitulo={`Visão geral do ano letivo ${painel.ano_letivo} — ${painel.bimestre}`} />
 
       <Kpis itens={painel.kpis} />
 

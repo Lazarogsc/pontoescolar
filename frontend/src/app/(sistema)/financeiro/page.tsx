@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BotaoEnviar } from "@/components/BotaoEnviar";
 import { Cabecalho, Cartao, Kpis, Situacao, Vazio, ui } from "@/components/ui";
 import { api, formatarMoeda } from "@/lib/api";
+import { pagarParcela } from "../diretoria/actions";
 
 export const metadata: Metadata = { title: "Financeiro" };
 
@@ -16,14 +18,14 @@ export default async function FinanceiroPage({ searchParams }: PageProps<"/finan
   const { status } = await searchParams;
   const filtro = FILTROS.some((f) => f.valor === status) ? (status as string) : "";
   const { competencia, resumo, mensalidades } = await api.financeiro(filtro);
-  const recebidoPct = Math.round((resumo.recebido / resumo.previsto) * 100);
+  const recebidoPct = resumo.previsto ? Math.round((resumo.recebido / resumo.previsto) * 100) : 0;
 
   return (
     <>
       <Cabecalho titulo="Financeiro" subtitulo={`Mensalidades · ${competencia}`}>
-        <button className="btn btn-secundario" disabled title="Em breve">
-          Exportar
-        </button>
+        <Link className="btn btn-secundario" href="/diretoria/inadimplentes">
+          Ver inadimplentes
+        </Link>
       </Cabecalho>
 
       <Kpis
@@ -31,7 +33,7 @@ export default async function FinanceiroPage({ searchParams }: PageProps<"/finan
           { rotulo: "Previsto no mês", valor: formatarMoeda(resumo.previsto), variacao: "Todas as matrículas", tendencia: "neutral" },
           { rotulo: "Recebido", valor: formatarMoeda(resumo.recebido), variacao: `${recebidoPct}% do previsto`, tendencia: "up" },
           { rotulo: "Pendente", valor: formatarMoeda(resumo.pendente), variacao: "Aguardando pagamento", tendencia: "neutral" },
-          { rotulo: "Em atraso", valor: formatarMoeda(resumo.atrasado), variacao: "Vencidas em 10/10", tendencia: "down" },
+          { rotulo: "Em atraso", valor: formatarMoeda(resumo.atrasado), variacao: "Vencidas e não pagas", tendencia: "down" },
         ]}
       />
 
@@ -61,13 +63,14 @@ export default async function FinanceiroPage({ searchParams }: PageProps<"/finan
                   <th>Vencimento</th>
                   <th className={ui.num}>Valor</th>
                   <th>Situação</th>
+                  <th />
                 </tr>
               </thead>
               <tbody>
                 {mensalidades.map((m) => (
-                  <tr key={m.aluno_id}>
+                  <tr key={m.parcela_id}>
                     <td>
-                      <strong>{m.aluno}</strong>
+                      <Link href={`/matriculas/${m.matricula}`}>{m.aluno}</Link>
                     </td>
                     <td>{m.turma}</td>
                     <td>{m.responsavel}</td>
@@ -75,6 +78,15 @@ export default async function FinanceiroPage({ searchParams }: PageProps<"/finan
                     <td className={ui.num}>{formatarMoeda(m.valor)}</td>
                     <td>
                       <Situacao valor={m.status} />
+                    </td>
+                    <td>
+                      {m.status !== "Em dia" && (
+                        <form action={pagarParcela.bind(null, m.parcela_id)}>
+                          <BotaoEnviar variante="secundario" enviando="…" className={ui.btnPequeno}>
+                            Dar baixa
+                          </BotaoEnviar>
+                        </form>
+                      )}
                     </td>
                   </tr>
                 ))}

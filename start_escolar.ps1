@@ -4,8 +4,8 @@
 #   start_escolar local      API (uvicorn) e app (next dev) direto na máquina, com recarga automática
 #   start_escolar docker     API e app em containers (docker compose), igual à produção
 #
-# Em qualquer modo, antes de subir, encerra o que o projeto deixou rodando:
-# containers do compose e processos node/python nas portas 3002 e 8002.
+# Em qualquer modo, antes de subir, libera as portas 3002 e 8002 seja quem for o dono:
+# containers do compose, containers de outros projetos e qualquer processo que esteja nelas.
 
 param(
     [ValidateSet("", "local", "docker")]
@@ -27,30 +27,73 @@ function Escrever($texto, $cor = "Cyan") { Write-Host "[escolar] $texto" -Foregr
 
 # ---------- Portas ----------
 
-# Só encerra processos que o próprio projeto sobe (node = Next.js, python = API).
-# Qualquer outro dono da porta (Docker de outro projeto, WSL, serviços do Windows) é preservado.
-$ProcessosDoProjeto = @("node", "python", "pythonw", "uvicorn")
+# Libera a porta seja quem for o dono: containers Docker (de qualquer projeto) são parados pelo
+# próprio Docker; qualquer outro processo (node, python, wslrelay, etc.) é encerrado à força.
+# Só não mata processos do Docker Desktop (derrubaria o Docker inteiro) nem do Windows.
+$ProcessosProtegidos = @(
+    "system", "idle", "svchost", "lsass", "services", "wininit",
+    "com.docker.backend", "com.docker.proxy", "com.docker.build", "docker desktop", "vpnkit", "dockerd"
+)
+
+function Donos-Da-Porta($porta) {
+    Get-NetTCPConnection -LocalPort $porta -State Listen -ErrorAction SilentlyContinue |
+        Select-Object -ExpandProperty OwningProcess -Unique |
+        Where-Object { $_ -gt 0 }
+}
+
+function Aguardar-Porta-Livre($porta, $segundos) {
+    for ($i = 0; $i -lt $segundos; $i++) {
+        if (-not (Donos-Da-Porta $porta)) { return $true }
+        Start-Sleep -Seconds 1
+    }
+    return -not (Donos-Da-Porta $porta)
+}
+
+function Parar-Containers-Na-Porta($porta) {
+    if (-not (Docker-Instalado) -or -not (Docker-Ativo)) { return }
+    $containers = docker ps -q --filter "publish=$porta" 2>$null
+    foreach ($c in $containers) {
+        $nome = docker inspect --format "{{.Name}}" $c 2>$null
+        Escrever "Parando o container $($nome.TrimStart('/')) que usa a porta $porta..." "Yellow"
+        docker stop $c 2>&1 | Out-Null
+    }
+}
 
 function Liberar-Porta($porta) {
     $ErrorActionPreference = "Continue"
-    $conexoes = Get-NetTCPConnection -LocalPort $porta -State Listen -ErrorAction SilentlyContinue
-    $pids = $conexoes | Select-Object -ExpandProperty OwningProcess -Unique | Where-Object { $_ -gt 0 }
-    if (-not $pids) {
+    if (-not (Donos-Da-Porta $porta)) {
         Escrever "Porta $porta livre." "DarkGray"
         return
     }
-    foreach ($id in $pids) {
+
+    # 1) Container Docker de qualquer projeto publicando a porta
+    Parar-Containers-Na-Porta $porta
+    # O Docker/WSL pode levar alguns segundos para soltar a porta depois de parar um container.
+    if (Aguardar-Porta-Livre $porta 8) {
+        Escrever "Porta $porta liberada." "DarkGray"
+        return
+    }
+
+    # 2) Qualquer outro processo: encerra à força (com os processos filhos)
+    foreach ($id in Donos-Da-Porta $porta) {
         $proc = Get-Process -Id $id -ErrorAction SilentlyContinue
         if (-not $proc) { continue }
-        if ($ProcessosDoProjeto -notcontains $proc.ProcessName.ToLower()) {
-            Escrever "A porta $porta está em uso por '$($proc.ProcessName)' (PID $id), que não é deste projeto." "Red"
-            Escrever "Encerre esse programa (ex.: container de outro projeto) ou libere a porta e rode o start_escolar de novo." "Red"
-            exit 1
+        if ($ProcessosProtegidos -contains $proc.ProcessName.ToLower()) {
+            Escrever "A porta $porta está presa em '$($proc.ProcessName)' (PID $id), do Docker/Windows; não dá para encerrar com segurança." "Yellow"
+            continue
         }
         Escrever "Encerrando $($proc.ProcessName) (PID $id) na porta $porta..." "Yellow"
-        # /T encerra também os processos filhos (ex.: next dev, uvicorn --reload)
         taskkill /PID $id /T /F 2>$null | Out-Null
     }
+
+    if (Aguardar-Porta-Livre $porta 8) {
+        Escrever "Porta $porta liberada." "DarkGray"
+        return
+    }
+    $resta = Donos-Da-Porta $porta | ForEach-Object { (Get-Process -Id $_ -ErrorAction SilentlyContinue).ProcessName }
+    Escrever "Não foi possível liberar a porta $porta (ainda em uso por: $($resta -join ', '))." "Red"
+    Escrever "Reinicie o Docker Desktop (ou o computador) e rode o start_escolar de novo." "Red"
+    exit 1
 }
 
 # ---------- Docker ----------
@@ -153,6 +196,7 @@ if ($Modo -eq "docker") {
     Escrever "Tudo no ar (Docker)!" "Green"
     Escrever "  App:  http://localhost:$PortaApp" "Green"
     Escrever "  API:  http://localhost:$PortaApi/docs" "Green"
+    Escrever "Primeiro acesso: login 'admin', senha 'admin123' (o sistema pede para trocar)." "DarkGray"
     Escrever "Logs:  docker compose logs -f     Parar:  docker compose down" "DarkGray"
     exit 0
 }
@@ -191,4 +235,5 @@ if (Aguardar-App) { Start-Process "http://localhost:$PortaApp" }
 Escrever "Tudo no ar (local)!" "Green"
 Escrever "  App:  http://localhost:$PortaApp" "Green"
 Escrever "  API:  http://localhost:$PortaApi/docs" "Green"
+Escrever "Primeiro acesso: login 'admin', senha 'admin123' (o sistema pede para trocar)." "DarkGray"
 Escrever "Para parar, feche as janelas 'ponto.escolar - API' e 'ponto.escolar - App' (ou rode o start_escolar de novo)." "DarkGray"

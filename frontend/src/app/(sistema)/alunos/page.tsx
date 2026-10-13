@@ -13,9 +13,9 @@ export default async function AlunosPage({ searchParams }: PageProps<"/alunos">)
   return (
     <>
       <Cabecalho titulo="Alunos" subtitulo="Cadastro e situação de cada aluno matriculado">
-        <button className="btn btn-primario" disabled title="Em breve">
+        <Link className="btn btn-primario" href="/matriculas/nova">
           + Nova matrícula
-        </button>
+        </Link>
       </Cabecalho>
 
       <Cartao>
@@ -63,7 +63,11 @@ export default async function AlunosPage({ searchParams }: PageProps<"/alunos">)
               <tbody>
                 {alunos.map((a) => (
                   <tr key={a.id}>
-                    <td className={`mono ${ui.suave}`}>{a.matricula}</td>
+                    <td>
+                      <Link className="mono" href={`/matriculas/${a.matricula}`}>
+                        {a.matricula}
+                      </Link>
+                    </td>
                     <td>
                       <strong>{a.nome}</strong>
                     </td>
@@ -75,7 +79,7 @@ export default async function AlunosPage({ searchParams }: PageProps<"/alunos">)
                       <br />
                       <span className={ui.suave}>{a.telefone}</span>
                     </td>
-                    <td className={ui.num}>{formatarNumero(a.frequencia)}%</td>
+                    <td className={ui.num}>{a.frequencia === null ? "—" : `${formatarNumero(a.frequencia)}%`}</td>
                     <td className={ui.num}>{formatarNumero(a.media)}</td>
                     <td>
                       <Situacao valor={a.mensalidade} />

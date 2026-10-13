@@ -1,5 +1,6 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
-import type { Painel, SituacaoMensalidade } from "@/lib/api";
+import type { Kpi, Periodo, SituacaoMensalidade } from "@/lib/api";
 import styles from "./ui.module.css";
 
 export { styles as ui };
@@ -20,7 +21,7 @@ export function Cabecalho({ titulo, subtitulo, children }: { titulo: string; sub
   );
 }
 
-export function Kpis({ itens }: { itens: Painel["kpis"] }) {
+export function Kpis({ itens }: { itens: Kpi[] }) {
   return (
     <div className={styles.kpis}>
       {itens.map((k) => (
@@ -60,4 +61,87 @@ export function Situacao({ valor }: { valor: SituacaoMensalidade }) {
 
 export function Vazio({ children }: { children: ReactNode }) {
   return <p className={styles.vazio}>{children}</p>;
+}
+
+type Tom = "ok" | "aviso" | "alerta" | "neutro";
+const COR_TOM: Record<Tom, string> = { ok: styles.tagOk, aviso: styles.tagAviso, alerta: styles.tagAlerta, neutro: styles.tagNeutra };
+
+export function Tag({ tom, children }: { tom: Tom; children: ReactNode }) {
+  return <span className={`${styles.tag} ${COR_TOM[tom]}`}>{children}</span>;
+}
+
+/** Ranking em barras horizontais, com o valor escrito ao lado (sem depender de cor). */
+export function Barras({
+  itens,
+  formatar,
+  tom = "principal",
+}: {
+  itens: { nome: string; valor: number; detalhe?: string }[];
+  formatar: (v: number) => string;
+  tom?: "principal" | "alerta";
+}) {
+  const max = Math.max(...itens.map((i) => i.valor), 1);
+  if (!itens.length || itens.every((i) => i.valor === 0)) return <Vazio>Sem movimento no período.</Vazio>;
+  return (
+    <ul className={styles.barras}>
+      {itens.map((i) => (
+        <li key={i.nome}>
+          <div className={styles.barrasTopo}>
+            <span>{i.nome}</span>
+            <strong className="mono">{formatar(i.valor)}</strong>
+          </div>
+          <div className={styles.trilho}>
+            <span className={tom === "alerta" ? styles.preenchimentoAlerta : undefined} style={{ width: `${(i.valor / max) * 100}%` }} />
+          </div>
+          {i.detalhe && <small>{i.detalhe}</small>}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+const ATALHOS = [
+  { chave: "hoje", rotulo: "Hoje" },
+  { chave: "7d", rotulo: "7 dias" },
+  { chave: "mes", rotulo: "Este mês" },
+  { chave: "ano", rotulo: "Este ano" },
+];
+
+/** Filtro de período: atalhos (hoje, 7 dias, mês, ano) e intervalo de datas livre. */
+export function FiltroPeriodo({ base, periodo, manter = {} }: { base: string; periodo: Periodo; manter?: Record<string, string> }) {
+  const url = (params: Record<string, string>) => `${base}?${new URLSearchParams({ ...manter, ...params })}`;
+  return (
+    <div className={styles.periodo}>
+      <nav className={styles.abas} aria-label="Período">
+        {ATALHOS.map((a) => (
+          <Link key={a.chave} href={url({ periodo: a.chave })} aria-current={periodo.chave === a.chave ? "page" : undefined}>
+            {a.rotulo}
+          </Link>
+        ))}
+      </nav>
+      <form className={styles.intervalo} action={base}>
+        {Object.entries(manter).map(([k, v]) => (
+          <input key={k} type="hidden" name={k} value={v} />
+        ))}
+        <label>
+          De <input type="date" name="de" defaultValue={periodo.de} required />
+        </label>
+        <label>
+          até <input type="date" name="ate" defaultValue={periodo.ate} required />
+        </label>
+        <button className="btn btn-secundario" type="submit">
+          Aplicar
+        </button>
+      </form>
+    </div>
+  );
+}
+
+/** Mensagem de retorno de um formulário (sucesso ou erro). */
+export function Aviso({ tom, children }: { tom: "ok" | "erro"; children: ReactNode }) {
+  return (
+    <p className={tom === "ok" ? styles.avisoOk : styles.avisoErro} role={tom === "erro" ? "alert" : "status"}>
+      {children}
+    </p>
+  );
 }

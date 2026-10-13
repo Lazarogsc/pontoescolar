@@ -52,7 +52,8 @@ svg {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
   color: inherit;
 }
@@ -93,12 +94,17 @@ select {
   transition: background 0.2s, border-color 0.2s;
 }
 
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .btn-primario {
   background: var(--ponto);
   color: var(--branco);
 }
 
-.btn-primario:hover {
+.btn-primario:hover:not(:disabled) {
   background: #1f59ea;
 }
 

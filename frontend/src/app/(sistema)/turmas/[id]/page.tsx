@@ -33,7 +33,7 @@ export default async function TurmaPage({ params }: PageProps<"/turmas/[id]">) {
 
       <Kpis
         itens={[
-          { rotulo: "Alunos", valor: String(turma.alunos), variacao: "Matriculados", tendencia: "neutral" },
+          { rotulo: "Alunos", valor: String(turma.alunos), variacao: `${turma.vagas} vagas de ${turma.capacidade}`, tendencia: "neutral" },
           { rotulo: "Frequência média", valor: `${formatarNumero(turma.frequencia)}%`, variacao: "No bimestre", tendencia: "neutral" },
           { rotulo: "Média geral", valor: formatarNumero(turma.media), variacao: "Todas as disciplinas", tendencia: "neutral" },
           { rotulo: "Mensalidades em aberto", valor: String(pendencias), variacao: "Pendentes ou atrasadas", tendencia: pendencias ? "down" : "up" },
@@ -63,9 +63,13 @@ export default async function TurmaPage({ params }: PageProps<"/turmas/[id]">) {
                     <td>
                       <strong>{a.nome}</strong>
                     </td>
-                    <td className={`mono ${ui.suave}`}>{a.matricula}</td>
+                    <td>
+                      <Link className="mono" href={`/matriculas/${a.matricula}`}>
+                        {a.matricula}
+                      </Link>
+                    </td>
                     <td>{a.responsavel}</td>
-                    <td className={ui.num}>{formatarNumero(a.frequencia)}%</td>
+                    <td className={ui.num}>{a.frequencia === null ? "—" : `${formatarNumero(a.frequencia)}%`}</td>
                     <td className={ui.num}>{formatarNumero(a.media)}</td>
                     <td>
                       <Situacao valor={a.mensalidade} />

@@ -1,9 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
-import { MENU } from "@/lib/menu";
+import { menuDoUsuario } from "@/lib/menu";
+import { usuarioAtual } from "@/lib/sessao";
 import { MenuLinks } from "./MenuLinks";
 import styles from "./Sidebar.module.css";
+
+/** O menu depende de quem está logado; enquanto a sessão carrega, mostra um esqueleto. */
+async function MenuDoUsuario() {
+  const u = await usuarioAtual();
+  return <MenuLinks grupos={menuDoUsuario(u.modulos)} />;
+}
 
 export function Sidebar() {
   return (
@@ -16,20 +23,13 @@ export function Sidebar() {
       </Link>
 
       <nav aria-label="Menu principal">
-        {/* O item ativo depende da URL; até ela chegar, mostra o menu sem destaque. */}
-        <Suspense
-          fallback={MENU.map((item) => (
-            <Link key={item.href} href={item.href}>
-              {item.rotulo}
-            </Link>
-          ))}
-        >
-          <MenuLinks classeAtivo={styles.ativo} />
+        <Suspense fallback={<span className={styles.carregando} aria-label="Carregando menu" />}>
+          <MenuDoUsuario />
         </Suspense>
       </nav>
 
       <div className={styles.rodape}>
-        <span className={styles.badge}>Esboço · dados fictícios</span>
+        <span className={styles.badge}>Dados de exemplo</span>
         <span>por pontodevelop</span>
       </div>
     </aside>

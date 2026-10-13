@@ -12,7 +12,11 @@ RUN pip install -r requirements.txt
 
 COPY app ./app
 
-RUN useradd --create-home escolar
+# Matrículas, compras, pontos e atestados cadastrados ficam em /app/dados (volume no compose).
+# TZ em formato POSIX (UTC−3, sem horário de verão) dispensa o pacote tzdata.
+ENV DADOS_DIR=/app/dados \
+    TZ=<-03>3
+RUN useradd --create-home escolar && mkdir -p /app/dados && chown escolar /app/dados
 USER escolar
 
 EXPOSE 8000

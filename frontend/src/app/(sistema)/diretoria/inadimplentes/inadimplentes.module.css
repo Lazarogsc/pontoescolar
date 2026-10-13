@@ -1,0 +1,24 @@
+.linha td {
+  vertical-align: top;
+}
+
+.contato {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sucesso) !important;
+}
+
+.parcelas {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.parcelas li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
