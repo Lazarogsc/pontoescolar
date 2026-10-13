@@ -1,0 +1,24 @@
+name: pontoescolar
+
+# Portas no host: 3002 (app) e 8002 (API), para não conflitar com o site da
+# pontodevelop (3001/8001) nem com outros projetos que usam 3000/8000.
+services:
+  api:
+    build: ./backend
+    ports:
+      - "8002:8000"   # API em http://localhost:8002
+    environment:
+      CORS_ORIGINS: http://localhost:3002
+    restart: on-failure
+
+  app:
+    build: ./frontend
+    ports:
+      - "3002:3000"   # app em http://localhost:3002
+    environment:
+      # Dentro da rede do compose a API é acessada pelo nome do serviço.
+      API_URL: http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: on-failure

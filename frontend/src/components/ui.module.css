@@ -1,0 +1,296 @@
+/* ---------- Cabeçalho da página ---------- */
+.cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cabecalho h1 {
+  font-size: 26px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--marinho);
+}
+
+.cabecalho p {
+  color: var(--texto-suave);
+  font-size: 14px;
+}
+
+.acoes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---------- KPIs ---------- */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.kpi,
+.cartao {
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 18px;
+}
+
+.kpiRotulo {
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+.kpi strong {
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  color: var(--marinho);
+}
+
+.variacao {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.up {
+  color: var(--sucesso);
+}
+
+.down {
+  color: var(--alerta);
+}
+
+.neutral {
+  color: var(--texto-suave);
+}
+
+/* ---------- Cartões e grades ---------- */
+.grade {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 14px;
+}
+
+.cartao {
+  padding: 20px;
+  min-width: 0;
+}
+
+.cartaoTopo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.cartaoTopo h2 {
+  font-size: 15px;
+}
+
+.cartaoTopo a {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ponto);
+}
+
+/* ---------- Lista simples ---------- */
+.lista {
+  list-style: none;
+}
+
+.lista li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-top: 1px solid var(--borda);
+  font-size: 14px;
+}
+
+.lista li:first-child {
+  border-top: 0;
+}
+
+.lista li div {
+  display: flex;
+  flex-direction: column;
+}
+
+.lista li div span {
+  color: var(--texto-suave);
+  font-size: 12px;
+}
+
+.lista li > span {
+  font-weight: 600;
+  color: var(--marinho);
+  white-space: nowrap;
+}
+
+/* ---------- Tabela ---------- */
+.tabelaWrap {
+  overflow-x: auto;
+}
+
+.tabelaWrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.tabelaWrap th {
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-suave);
+  padding: 8px 16px 10px 0;
+  border-bottom: 1px solid var(--borda);
+}
+
+.tabelaWrap td {
+  padding: 11px 16px 11px 0;
+  border-bottom: 1px solid var(--borda);
+}
+
+.tabelaWrap tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.tabelaWrap tbody tr:hover td {
+  background: var(--nevoa);
+}
+
+.tabelaWrap td a {
+  font-weight: 700;
+  color: var(--marinho);
+}
+
+.tabelaWrap td a:hover {
+  color: var(--ponto);
+}
+
+.num {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  text-align: right !important;
+}
+
+.suave {
+  color: var(--texto-suave);
+}
+
+/* ---------- Etiquetas ---------- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tagOk {
+  background: var(--sucesso-claro);
+  color: var(--sucesso);
+}
+
+.tagAviso {
+  background: var(--aviso-claro);
+  color: var(--aviso);
+}
+
+.tagAlerta {
+  background: var(--alerta-claro);
+  color: var(--alerta);
+}
+
+.tagNeutra {
+  background: var(--ponto-claro);
+  color: var(--ponto);
+}
+
+/* ---------- Filtros ---------- */
+.filtros {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.filtros input,
+.filtros select {
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: var(--branco);
+  font-size: 14px;
+}
+
+.filtros input {
+  flex: 1;
+  min-width: 220px;
+}
+
+.abas {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.abas a {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--borda);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+.abas a[aria-current="page"] {
+  background: var(--marinho);
+  border-color: var(--marinho);
+  color: var(--branco);
+}
+
+.vazio {
+  padding: 28px 0;
+  text-align: center;
+  color: var(--texto-suave);
+  font-size: 14px;
+}
+
+.contagem {
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+@media (max-width: 960px) {
+  .kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .grade {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .kpi strong {
+    font-size: 19px;
+  }
+}

@@ -1,0 +1,92 @@
+.sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 24px 14px;
+  background: var(--noite);
+  color: rgb(255 255 255 / 72%);
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px 26px;
+  color: var(--branco);
+  font-size: 17px;
+}
+
+.marca img {
+  background: var(--branco);
+  border-radius: 6px;
+  padding: 3px;
+}
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sidebar nav a {
+  padding: 10px 12px;
+  border-radius: 9px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.sidebar nav a:hover {
+  background: rgb(255 255 255 / 6%);
+  color: var(--branco);
+}
+
+.sidebar nav .ativo {
+  background: rgb(47 107 255 / 22%);
+  color: var(--branco);
+  box-shadow: inset 3px 0 0 var(--ponto);
+}
+
+.rodape {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.badge {
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgb(240 160 32 / 18%);
+  color: #ffc76b;
+  font-weight: 700;
+}
+
+@media (max-width: 960px) {
+  .sidebar {
+    position: static;
+    height: auto;
+    padding: 14px;
+  }
+  .marca {
+    padding: 0 4px 12px;
+  }
+  .sidebar nav {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+  .sidebar nav a {
+    white-space: nowrap;
+  }
+  .sidebar nav .ativo {
+    box-shadow: inset 0 -2px 0 var(--ponto);
+  }
+  .rodape {
+    display: none;
+  }
+}

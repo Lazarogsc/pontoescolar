@@ -1,0 +1,40 @@
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.meta {
+  margin-top: -8px;
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+.texto {
+  margin: 10px 0 16px;
+  font-size: 14px;
+}
+
+.leitura {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+.barra {
+  flex: 1;
+  max-width: 280px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--ponto-claro);
+  overflow: hidden;
+}
+
+.barra span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ponto);
+}

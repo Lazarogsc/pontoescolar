@@ -1,0 +1,65 @@
+/* ---------- Carregando ---------- */
+.esqueleto {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.esqueleto span {
+  display: block;
+  border-radius: var(--raio);
+  background: linear-gradient(90deg, var(--borda), #edf1f7, var(--borda));
+  background-size: 200% 100%;
+  animation: brilho 1.2s ease-in-out infinite;
+}
+
+.titulo {
+  width: 280px;
+  max-width: 70%;
+  height: 34px;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.kpis span {
+  height: 104px;
+}
+
+.bloco {
+  height: 360px;
+}
+
+@keyframes brilho {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ---------- Erro / não encontrado ---------- */
+.aviso {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 520px;
+  padding: 48px 0;
+}
+
+.aviso h1 {
+  font-size: 24px;
+  color: var(--marinho);
+}
+
+.aviso p {
+  color: var(--texto-suave);
+}
+
+@media (max-width: 960px) {
+  .kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
