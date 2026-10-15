@@ -3,7 +3,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.rotas import admin, cga, conta, cpd, diretoria, matriculas, professores, rh, secretaria
+from app.rotas import admin, avisos, cga, conta, cpd, diretoria, matriculas, professores, rh, secretaria, suprimentos
 
 app = FastAPI(
     title="ponto.escolar API",
@@ -35,3 +35,5 @@ app.include_router(rh.router)
 app.include_router(professores.router)
 app.include_router(cpd.router)
 app.include_router(cga.router)
+app.include_router(suprimentos.router)
+app.include_router(avisos.router)

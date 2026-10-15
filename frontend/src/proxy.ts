@@ -1,15 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Checagem rápida: sem cookie de sessão, vai para o login (guardando para onde ia).
+ * Checagem rápida: sem cookie de sessão, vai para o login.
  * A validação de verdade (sessão expirada, permissão do setor) é feita pela API.
  */
 export function proxy(request: NextRequest) {
   if (request.cookies.has("pe_sessao")) return NextResponse.next();
-  const login = new URL("/login", request.url);
-  const destino = request.nextUrl.pathname + request.nextUrl.search;
-  if (destino !== "/") login.searchParams.set("de", destino);
-  return NextResponse.redirect(login);
+  return NextResponse.redirect(new URL("/login", request.url));
 }
 
 export const config = {

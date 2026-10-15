@@ -5,12 +5,12 @@ import styles from "./login.module.css";
 
 export const metadata: Metadata = { title: "Entrar" };
 
-// O login é aberto direto pela URL (com ?de= e ?expirou=), não por navegação dentro do sistema:
+// O login é aberto direto pela URL (com ?expirou=), não por navegação dentro do sistema:
 // pode esperar os parâmetros em vez de exigir um esqueleto de carregamento.
 export const instant = false;
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
-  const { de, expirou } = await searchParams;
+  const { expirou } = await searchParams;
 
   return (
     <div className={styles.tela}>
@@ -35,7 +35,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           </h2>
           <p className={styles.sub}>Use o login e a senha fornecidos pela escola.</p>
           {expirou && <p className={styles.aviso}>Sua sessão expirou. Entre novamente.</p>}
-          <FormLogin de={typeof de === "string" ? de : ""} />
+          <FormLogin />
           <p className={styles.ajuda}>Esqueceu a senha? Peça ao administrador do sistema para redefinir.</p>
         </div>
       </section>

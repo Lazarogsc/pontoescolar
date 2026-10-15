@@ -2,13 +2,16 @@
 
 Sistema de **gestão escolar** da [pontodevelop](https://www.instagram.com/pontodevelop/), organizado por setor:
 
+- **Início:** mural de avisos gerais para todos os usuários. Após o login, todos chegam aqui; a logo também volta para esta tela.
 - **Secretaria:** matrícula com número gerado e termo `.docx` para assinatura, alunos, turmas (com vagas),
   financeiro com baixa de parcelas e comunicados.
 - **Diretoria:** painel com filtro de período (hoje, 7 dias, mês, ano ou datas livres): matrículas, venda de
   materiais, compras da escola e inadimplência.
 - **Portal do Responsável:** notas, provas, entrega de atividades, frequência e mensalidades do aluno.
-- **Meu RH:** cada funcionário registra o ponto e acompanha espelho, horas extras, banco de horas e atestados;
-  a gestão de RH aprova ou recusa atestados.
+- **Meu RH:** cada funcionário consulta a ficha, contracheques, férias, benefícios, diárias e treinamentos;
+  atualiza seus dados cadastrais, registra o ponto e acompanha atestados e banco de horas.
+- **RH:** painel de colaboradores, atualização de dados profissionais, lançamentos na ficha e análise de atestados.
+- **Suprimentos:** cada setor solicita a compra de produtos, acompanha o andamento e vê a decisão do RH.
 - **Professores:** comunicados da coordenação/direção para os docentes e envio de material para impressão
   (data, turma, observação e arquivo Word ou PDF), com aviso do prazo de 48 horas úteis.
 - **CPD:** recebimento do material dos professores (a coordenação do CPD aprova ou reprova, e o professor vê o
@@ -23,10 +26,12 @@ Sistema de **gestão escolar** da [pontodevelop](https://www.instagram.com/ponto
 - **Painel de Controle (superadmin):** usuários, setores, senhas, desativação, configurações da escola e registro
   de atividades.
 
+No menu, **Início** e **Meu RH** aparecem no topo para os colaboradores. A área de Secretaria continua acessível em `/secretaria`.
+
 > **Documentação técnica completa:** [docs/DOCUMENTACAO_TECNICA.md](docs/DOCUMENTACAO_TECNICA.md) (arquitetura, permissões, API, CGA, revisão, segurança e checklist de produção).
 
 > **Em desenvolvimento.** Os dados de exemplo são gerados em `backend/app/dados.py` (mesma semente a cada início).
-> Tudo que é cadastrado pela tela (usuários, matrículas, pagamentos, vendas, compras, pontos, atestados, comunicados, material do CPD, provas e cartões lidos) é gravado
+> Tudo que é cadastrado pela tela (usuários, avisos gerais, matrículas, pagamentos, vendas, compras, pontos, atestados, fichas de RH, pedidos de suprimentos, comunicados, material do CPD, provas e cartões lidos) é gravado
 > em `backend/dados/estado.json` (ou em `DADOS_DIR`). Banco de dados vem numa próxima etapa; notas e atividades
 > dos alunos de exemplo são simuladas até o Diário lançar notas de verdade.
 
@@ -57,6 +62,7 @@ O **setor** define o que cada pessoa vê (o superadmin vê tudo):
 - Senhas com PBKDF2-SHA256 e sal; sessões de 12 horas guardadas só como hash; 5 senhas erradas bloqueiam o
   login por 5 minutos. Mudar setor/perfil, redefinir senha ou desativar encerra as sessões da pessoa.
 - O ponto é pessoal: só o funcionário vinculado ao usuário registra o próprio ponto.
+- Cada funcionário acessa apenas a própria ficha; a gestão de RH acessa todas. Os pedidos de suprimentos são visíveis ao setor solicitante e ao RH.
 - Quem faz a matrícula é o usuário logado; o nome dele vai no termo como assinatura da escola.
 - Em HTTPS (produção na internet), defina `COOKIE_SEGURO=1` no app.
 
@@ -176,6 +182,14 @@ Os filtros de período aceitam `periodo` (`hoje`, `7d`, `mes`, `ano`) ou `de`/`a
 | `POST /api/rh/funcionarios/{id}/ponto`               | Registra o ponto agora                              |
 | `POST /api/rh/funcionarios/{id}/atestados`           | Envia atestado (PDF, JPG ou PNG até 5 MB)           |
 | `POST /api/rh/atestados/{id}/status`                 | Gestão de RH aprova ou recusa um atestado           |
+| `GET /api/rh/funcionarios/{id}/ficha`                | Ficha, contracheque, férias e benefícios           |
+| `PUT /api/rh/funcionarios/{id}/cadastrais`           | Funcionário atualiza seus dados cadastrais         |
+| `PUT /api/rh/funcionarios/{id}/profissionais`        | RH atualiza cargo e salário base                   |
+| `POST /api/rh/funcionarios/{id}/lancamentos`         | RH registra contracheque, férias e benefícios      |
+| `GET /api/rh/painel`                                 | Controle de colaboradores pelo RH                  |
+| `GET/POST /api/suprimentos`                          | Setor vê e cria pedidos de compra                  |
+| `GET /api/suprimentos/gestao`                        | RH vê pedidos de todos os setores                  |
+| `POST /api/suprimentos/{id}/analise`                 | RH responde, aprova ou rejeita um pedido           |
 | `GET/POST /api/professores/comunicados`              | Comunicados aos professores (publicar: coordenação/direção) |
 | `GET/POST /api/professores/materiais`                | Material do professor para o CPD (Word ou PDF até 5 MB) |
 | `GET /api/cpd/materiais?status=`                     | Material recebido pelo CPD                          |
@@ -191,6 +205,7 @@ Os filtros de período aceitam `periodo` (`hoje`, `7d`, `mes`, `ano`) ou `de`/`a
 | `GET/PATCH/DELETE /api/cga/leituras/{id}`            | Cartão lido: conferir, corrigir, excluir            |
 | `GET /api/cga/leituras/{id}/imagem?tipo=`            | `conferencia`, `nome` (recorte) ou `original`       |
 | `POST /api/auth/login`, `/api/auth/logout`           | Entrar e sair                                       |
+| `GET/POST /api/avisos`                               | Ler avisos gerais; publicar com acesso de gestão   |
 | `GET /api/auth/eu`, `POST /api/auth/senha`           | Usuário logado e troca da própria senha             |
 | `GET/POST /api/admin/usuarios`, `PATCH /api/admin/usuarios/{id}` | Usuários (superadmin)                   |
 | `POST /api/admin/usuarios/{id}/senha`                | Redefine a senha de alguém                          |

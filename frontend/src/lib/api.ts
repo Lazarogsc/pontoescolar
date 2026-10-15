@@ -85,6 +85,15 @@ export type Comunicado = {
   texto: string;
 };
 
+export type AvisoGeral = {
+  id: string;
+  titulo: string;
+  texto: string;
+  autor: string;
+  publicado_em: string;
+  exemplo: boolean;
+};
+
 // ---------- Matrícula ----------
 
 export type Parcela = {
@@ -540,6 +549,85 @@ export type LeituraDetalhe = {
   leitura: Leitura;
 };
 
+// ---------- RH (ficha do funcionário, painel) e Suprimentos ----------
+
+export type Contracheque = {
+  id: string | null;
+  competencia: string;
+  salario_bruto: number;
+  descontos: number;
+  inss: number;
+  irrf: number;
+  fgts: number;
+  liquido: number;
+  exemplo: boolean;
+};
+
+export type Ferias = { id: string | null; ano: number; inicio: string; fim: string; dias_gozados: number; dias_vendidos: number; status: string; observacao: string; exemplo: boolean };
+export type Beneficio = { id: string | null; tipo: string; descricao: string; operadora: string; valor: number; exemplo: boolean };
+export type Diaria = { id: string | null; destino: string; motivo: string; inicio: string; fim: string; dias: number; valor_diaria: number; processo: string; exemplo: boolean };
+export type Treinamento = { id: string | null; titulo: string; instituicao: string; modalidade: string; carga_horaria: number; conclusao: string; status: string; exemplo: boolean };
+export type SituacaoFerias = "Em dia" | "Próxima do vencimento" | "Vencida";
+
+export type Ficha = {
+  funcionario: Funcionario;
+  profissionais: { matricula: string; cargo: string; setor: string; admissao: string; salario_base: number };
+  cadastrais: Record<string, string>;
+  kpis: { saldo_ferias: number; horas_extras_mes: number; diarias_acumuladas: number; salario_liquido: number | null; competencia_liquido: string | null };
+  competencia: string;
+  competencias: string[];
+  contracheque: Contracheque | null;
+  ferias: Ferias[];
+  situacao_ferias: { status: SituacaoFerias; meses_sem_ferias: number; saldo_dias: number };
+  beneficios: Beneficio[];
+  diarias: Diaria[];
+  treinamentos: Treinamento[];
+  historico: { id: string; campo: string; anterior: string; novo: string; por: string; em: string }[];
+  opcoes: { estados_civis: string[]; tipos_beneficio: string[]; status_ferias: string[] };
+};
+
+export type PainelRh = {
+  competencia: string;
+  kpis: { colaboradores: number; ferias_vencidas: number; ferias_proximas: number; atrasos_hoje: number; em_hora_extra: number; dias_atestado_mes: number; faltas_mes: number };
+  colaboradores: {
+    id: string;
+    nome: string;
+    cargo: string;
+    setor: string;
+    admissao: string;
+    ferias: SituacaoFerias;
+    meses_sem_ferias: number;
+    atrasos_mes: number;
+    minutos_debito_mes: number;
+    atrasado_hoje: boolean;
+    faltas_mes: number;
+    horas_extras_mes: number;
+    dias_atestado_mes: number;
+  }[];
+};
+
+export type StatusSuprimento = "Pendente" | "Em análise" | "Aprovada" | "Rejeitada";
+
+export type Suprimento = {
+  id: string;
+  numero: string;
+  setor: string;
+  solicitante: string;
+  item: string;
+  quantidade: number;
+  unidade: string;
+  justificativa: string;
+  prioridade: "Baixa" | "Média" | "Alta";
+  status: StatusSuprimento;
+  resposta: string;
+  analisado_por: string | null;
+  criado_em: string;
+  atualizado_em: string;
+};
+
+export type MeusSuprimentos = { setor: string; prioridades: string[]; unidades: string[]; itens: Suprimento[] };
+export type GestaoSuprimentos = { status: StatusSuprimento[]; contagem: Record<StatusSuprimento, number>; itens: Suprimento[] };
+
 // ---------- Painel de Controle ----------
 
 export type UsuarioAdmin = Usuario & { sessoes: number };
@@ -661,6 +749,7 @@ export async function repassarArquivo(caminho: string): Promise<Response> {
 }
 
 export const api = {
+  avisos: () => get<AvisoGeral[]>("/api/avisos"),
   painel: () => get<Painel>("/api/painel"),
   turmas: () => get<Turma[]>("/api/turmas"),
   turma: (id: string) => get<Turma & { lista: Aluno[] }>(`/api/turmas/${encodeURIComponent(id)}`),
@@ -680,6 +769,10 @@ export const api = {
 
   funcionarios: () => get<Funcionario[]>("/api/rh/funcionarios"),
   espelho: (id: string, mes?: string) => get<Espelho>(`/api/rh/funcionarios/${encodeURIComponent(id)}`, { mes }),
+  ficha: (id: string, competencia?: string) => get<Ficha>(`/api/rh/funcionarios/${encodeURIComponent(id)}/ficha`, { competencia }),
+  painelRh: () => get<PainelRh>("/api/rh/painel"),
+  suprimentos: () => get<MeusSuprimentos>("/api/suprimentos"),
+  suprimentosGestao: (status?: string) => get<GestaoSuprimentos>("/api/suprimentos/gestao", { status }),
 
   comunicadosProfessores: () => get<ComunicadoProfessor[]>("/api/professores/comunicados"),
   meusMateriais: () => get<MeusMateriais>("/api/professores/materiais"),
@@ -708,6 +801,7 @@ export const api = {
 };
 
 export const gravar = {
+  aviso: (corpo: unknown) => enviar<AvisoGeral>("/api/avisos", corpo),
   matricula: (corpo: unknown) => enviar<Matricula>("/api/matriculas", corpo),
   pagamento: (parcelaId: string) => enviar<Parcela>(`/api/parcelas/${encodeURIComponent(parcelaId)}/pagamento`),
   venda: (corpo: unknown) => enviar<Venda>("/api/vendas", corpo),
@@ -716,6 +810,12 @@ export const gravar = {
   ponto: (funcId: string) => enviar<{ horario: string }>(`/api/rh/funcionarios/${encodeURIComponent(funcId)}/ponto`),
   atestado: (funcId: string, corpo: FormData) => enviar<Atestado>(`/api/rh/funcionarios/${encodeURIComponent(funcId)}/atestados`, corpo),
   avaliarAtestado: (id: string, corpo: FormData) => enviar<Atestado>(`/api/rh/atestados/${encodeURIComponent(id)}/status`, corpo),
+  cadastrais: (id: string, campos: Record<string, string>) => enviar<Record<string, string>>(`/api/rh/funcionarios/${encodeURIComponent(id)}/cadastrais`, { campos }, "PUT"),
+  profissionais: (id: string, corpo: unknown) => enviar<Ficha["profissionais"]>(`/api/rh/funcionarios/${encodeURIComponent(id)}/profissionais`, corpo, "PUT"),
+  lancamento: (id: string, tipo: string, campos: Record<string, string>) => enviar<{ id: string }>(`/api/rh/funcionarios/${encodeURIComponent(id)}/lancamentos`, { tipo, campos }),
+  excluirLancamento: (id: string) => enviar<{ ok: true }>(`/api/rh/lancamentos/${encodeURIComponent(id)}`, undefined, "DELETE"),
+  pedidoCompra: (corpo: unknown) => enviar<Suprimento>("/api/suprimentos", corpo),
+  analiseCompra: (id: string, corpo: unknown) => enviar<Suprimento>(`/api/suprimentos/${encodeURIComponent(id)}/analise`, corpo),
   comunicadoProfessores: (corpo: unknown) => enviar<ComunicadoProfessor>("/api/professores/comunicados", corpo),
   material: (corpo: FormData) => enviar<Material>("/api/professores/materiais", corpo),
   avaliarMaterial: (id: string, corpo: FormData) => enviar<Material>(`/api/cpd/materiais/${encodeURIComponent(id)}/avaliacao`, corpo),

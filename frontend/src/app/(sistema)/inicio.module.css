@@ -1,0 +1,17 @@
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.meta {
+  color: var(--texto-suave);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.texto {
+  white-space: pre-wrap;
+  line-height: 1.6;
+}

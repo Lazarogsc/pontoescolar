@@ -12,7 +12,7 @@ export const MENU: GrupoMenu[] = [
     setor: "Secretaria",
     modulos: ["secretaria"],
     itens: [
-      { href: "/", rotulo: "Painel", exato: true },
+      { href: "/secretaria", rotulo: "Painel", exato: true },
       { href: "/matriculas", rotulo: "Matrículas" },
       { href: "/alunos", rotulo: "Alunos" },
       { href: "/turmas", rotulo: "Turmas" },
@@ -60,11 +60,19 @@ export const MENU: GrupoMenu[] = [
     ],
   },
   {
+    setor: "RH",
+    modulos: ["rh_gestao"],
+    itens: [
+      { href: "/rh", rotulo: "Controle de colaboradores", exato: true },
+      { href: "/rh/funcionarios", rotulo: "Funcionários" },
+      { href: "/rh/suprimentos", rotulo: "Suprimentos" },
+    ],
+  },
+  {
     setor: "Portais",
-    modulos: ["portal", "familia", "meu_rh", "rh_gestao"],
+    modulos: ["portal", "familia"],
     itens: [
       { href: "/responsavel", rotulo: "Portal do Responsável", modulos: ["portal", "familia"] },
-      { href: "/meu-rh", rotulo: "Meu RH", modulos: ["meu_rh", "rh_gestao"] },
     ],
   },
   {
@@ -76,11 +84,35 @@ export const MENU: GrupoMenu[] = [
 ];
 
 /** Só os grupos e itens que o usuário pode ver. */
-export function menuDoUsuario(modulos: Modulo[]): { setor: string; itens: ItemMenu[] }[] {
+export function menuDoUsuario(modulos: Modulo[], setor: string): { setor: string; itens: ItemMenu[] }[] {
   const tem = (lista: Modulo[]) => lista.some((m) => modulos.includes(m));
-  return MENU.filter((g) => tem(g.modulos))
+  const grupos: { setor: string; itens: ItemMenu[] }[] = [{
+    setor: "Geral",
+    itens: [
+      { href: "/", rotulo: "Início", exato: true },
+      ...(setor !== "Responsável" && tem(["meu_rh"]) ? [{ href: "/meu-rh", rotulo: "Meu RH" }] : []),
+    ],
+  }, ...MENU.filter((g) => tem(g.modulos))
     .map((g) => ({ setor: g.setor, itens: g.itens.filter((i) => !i.modulos || tem(i.modulos)).map(({ href, rotulo, exato }) => ({ href, rotulo, exato })) }))
-    .filter((g) => g.itens.length);
+    .filter((g) => g.itens.length)];
+  if (tem(["suprimentos"])) {
+    const grupoDoSetor: Record<string, string> = {
+      Docentes: "Professores",
+      CPD: "CPD",
+      "Coordenação do CPD": "CPD",
+      Diagramação: "CPD",
+      Revisão: "CPD",
+    };
+    const nome = grupoDoSetor[setor] ?? setor;
+    const grupo = grupos.find((g) => g.setor === nome);
+    const item = { href: "/suprimentos", rotulo: "Solicitar material" };
+    if (grupo) grupo.itens.push(item);
+    else {
+      const antesDosPortais = grupos.findIndex((g) => g.setor === "Portais");
+      grupos.splice(antesDosPortais < 0 ? grupos.length : antesDosPortais, 0, { setor: nome, itens: [item] });
+    }
+  }
+  return grupos;
 }
 
 export function itemAtivo(item: ItemMenu, caminho: string) {

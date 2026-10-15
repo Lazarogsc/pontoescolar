@@ -46,7 +46,7 @@ def test_troca_de_senha_obrigatoria_no_primeiro_acesso():
 def test_permissoes_por_setor():
     professor = entrar_como("prof.teste", "Docentes", funcionario_id="F08")
     eu = professor.get("/api/auth/eu").json()
-    assert eu["modulos"] == ["meu_rh", "professores"]
+    assert eu["modulos"] == ["meu_rh", "professores", "suprimentos"]
     assert professor.get("/api/painel").status_code == 403
     assert professor.get("/api/diretoria/resumo").status_code == 403
     assert professor.get("/api/admin/usuarios").status_code == 403
@@ -79,7 +79,7 @@ def test_superadmin_gerencia_usuarios():
     assert carlos.get("/api/rh/funcionarios").status_code == 403
 
     # muda o setor: a sessão antiga cai e o novo acesso vale no próximo login
-    assert client.patch(f"/api/admin/usuarios/{criado['id']}", json={"setor": "RH"}).json()["modulos"] == ["meu_rh", "rh_gestao"]
+    assert client.patch(f"/api/admin/usuarios/{criado['id']}", json={"setor": "RH"}).json()["modulos"] == ["meu_rh", "rh_gestao", "suprimentos"]
     assert carlos.get("/api/auth/eu").status_code == 401
 
     # senha redefinida pelo admin + desativação

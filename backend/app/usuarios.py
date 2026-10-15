@@ -41,6 +41,7 @@ PERFIS = ["superadmin", "usuario"]
 #   cpd_diagramacao     formata o material aprovado e envia o Word formatado
 #   cpd_revisao         revisa o texto do material formatado e libera para impressão
 #   cga                 avaliações dos professores, provas, gabaritos e correção dos cartões
+#   suprimentos         pedir compra de produtos para o setor (todos os setores da escola)
 #   admin       Painel de Controle
 MODULOS_POR_SETOR = {
     "Diretoria": ["secretaria", "diretoria", "portal", "meu_rh", "rh_gestao", "professores_gestao", "cpd", "cga"],
@@ -57,7 +58,12 @@ MODULOS_POR_SETOR = {
     "Serviços gerais": ["meu_rh"],
     "Responsável": ["familia"],
 }
-TODOS_MODULOS = ["secretaria", "diretoria", "portal", "meu_rh", "rh_gestao", "professores", "professores_gestao", "cpd", "cpd_coordenacao", "cpd_diagramacao", "cpd_revisao", "cga", "admin"]
+# Todo setor da escola pede compras (Suprimentos); os responsáveis (pais) não.
+for _setor, _modulos in MODULOS_POR_SETOR.items():
+    if _setor != "Responsável":
+        _modulos.append("suprimentos")
+
+TODOS_MODULOS = ["secretaria", "diretoria", "portal", "meu_rh", "rh_gestao", "professores", "professores_gestao", "cpd", "cpd_coordenacao", "cpd_diagramacao", "cpd_revisao", "cga", "suprimentos", "admin"]
 
 _tentativas: dict[str, list] = {}
 

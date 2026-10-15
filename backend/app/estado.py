@@ -12,9 +12,9 @@ from pathlib import Path
 
 _COLECOES = (
     "matriculas", "pagamentos", "vendas", "compras", "compras_pagas", "batidas", "atestados",
-    "usuarios", "sessoes", "atividades", "config", "materiais", "comunicados_professores", "avaliacoes", "provas", "leituras",
+    "usuarios", "sessoes", "atividades", "config", "materiais", "comunicados_professores", "avaliacoes", "provas", "leituras", "rh_cadastros", "rh_historico", "rh_lancamentos", "suprimentos", "avisos",
 )
-_DICIONARIOS = ("pagamentos", "compras_pagas", "batidas", "sessoes", "config")
+_DICIONARIOS = ("pagamentos", "compras_pagas", "batidas", "sessoes", "config", "rh_cadastros")
 _trava = threading.RLock()
 _cache: dict | None = None
 _cache_dir: Path | None = None

@@ -2,14 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { menuDoUsuario } from "@/lib/menu";
-import { usuarioAtual } from "@/lib/sessao";
+import { usuarioNavegacao } from "@/lib/sessao";
 import { MenuLinks } from "./MenuLinks";
 import styles from "./Sidebar.module.css";
 
 /** O menu depende de quem está logado; enquanto a sessão carrega, mostra um esqueleto. */
 async function MenuDoUsuario() {
-  const u = await usuarioAtual();
-  return <MenuLinks grupos={menuDoUsuario(u.modulos)} />;
+  const u = await usuarioNavegacao();
+  return <MenuLinks grupos={menuDoUsuario(u.modulos, u.setor)} />;
 }
 
 export function Sidebar() {

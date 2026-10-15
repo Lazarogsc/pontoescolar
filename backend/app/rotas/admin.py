@@ -74,10 +74,10 @@ def opcoes() -> dict:
     """Listas para os formulários de usuário."""
     rotulos = {
         "secretaria": "Secretaria", "diretoria": "Diretoria", "portal": "Portal do Responsável (todos os alunos)",
-        "familia": "Portal do Responsável (só os filhos)", "meu_rh": "Meu RH", "rh_gestao": "Gestão de RH",
+        "familia": "Portal do Responsável (só os filhos)", "meu_rh": "Meu RH", "rh_gestao": "Gestão de RH e análise de Suprimentos",
         "professores": "Professores", "professores_gestao": "Professores (gestão)",
         "cpd": "CPD", "cpd_coordenacao": "CPD (aprovação de material)", "cpd_diagramacao": "Diagramação",
-        "cpd_revisao": "Revisão de materiais", "cga": "CGA (avaliações e correção)",
+        "cpd_revisao": "Revisão de materiais", "cga": "CGA (avaliações e correção)", "suprimentos": "Suprimentos (pedidos de compra)",
         "admin": "Painel de Controle",
     }
     return {

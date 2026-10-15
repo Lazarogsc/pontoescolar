@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import { sair } from "@/app/acoes-conta";
-import { pode, usuarioAtual } from "@/lib/sessao";
+import { pode, usuarioNavegacao } from "@/lib/sessao";
 import styles from "./BarraSuperior.module.css";
 import { DataDeHoje, MenuPerfil } from "./MenuPerfil";
 
 async function Perfil() {
-  const u = await usuarioAtual();
+  const u = await usuarioNavegacao();
   return (
     <MenuPerfil
       nome={u.nome}

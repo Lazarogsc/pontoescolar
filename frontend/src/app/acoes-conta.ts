@@ -2,17 +2,11 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { COOKIE_SESSAO, DURACAO_SESSAO, telaInicial, tokenDaSessao, type Usuario } from "@/lib/sessao";
+import { COOKIE_SESSAO, DURACAO_SESSAO, tokenDaSessao, type Usuario } from "@/lib/sessao";
 
 const API_URL = process.env.API_URL ?? "http://localhost:8002";
 
 export type EstadoConta = { erro?: string; ok?: string; tentativa: number };
-
-/** Só aceita voltar para um caminho interno (evita redirecionar para outro site). */
-function destinoSeguro(de: FormDataEntryValue | null) {
-  const caminho = typeof de === "string" ? de : "";
-  return caminho.startsWith("/") && !caminho.startsWith("//") && !caminho.startsWith("/login") ? caminho : "";
-}
 
 export async function entrar(anterior: EstadoConta, form: FormData): Promise<EstadoConta> {
   let res: Response;
@@ -38,7 +32,7 @@ export async function entrar(anterior: EstadoConta, form: FormData): Promise<Est
     // Em HTTPS (produção na internet), defina COOKIE_SEGURO=1.
     secure: process.env.COOKIE_SEGURO === "1",
   });
-  redirect(usuario.trocar_senha ? "/perfil?trocar=1" : destinoSeguro(form.get("de")) || telaInicial(usuario));
+  redirect(usuario.trocar_senha ? "/perfil?trocar=1" : "/");
 }
 
 export async function sair() {
