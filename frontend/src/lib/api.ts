@@ -331,6 +331,215 @@ export type Espelho = {
   atestados: Atestado[];
 };
 
+// ---------- Professores ----------
+
+export type ComunicadoProfessor = { id: string; titulo: string; texto: string; autor: string; publicado_em: string };
+
+export type StatusMaterial = "Aguardando análise" | "Aprovado" | "Reprovado";
+export type EtapaMaterial = "Diagramação" | "Revisão" | "Pronto para impressão";
+
+export type Achado = {
+  id: string;
+  trecho: number;
+  rotulo: string;
+  inicio: number;
+  tamanho: number;
+  original: string;
+  sugestoes: string[];
+  mensagem: string;
+  categoria: string;
+  regra: string;
+  contexto: { antes: string; trecho: string; depois: string };
+};
+
+export type Material = {
+  id: string;
+  usuario_id: string;
+  professor: string;
+  tipo: string;
+  data: string;
+  turma_id: string;
+  turma: string;
+  observacao: string;
+  nome_arquivo: string;
+  enviado_em: string;
+  no_prazo: boolean;
+  status: StatusMaterial;
+  motivo: string;
+  avaliado_por: string | null;
+  avaliado_em: string | null;
+  etapa: EtapaMaterial | null;
+  diagramacao: { por: string; em: string; nome_arquivo: string; observacao: string } | null;
+  revisao: {
+    analisado_em?: string;
+    analisado_por?: string;
+    formato?: string;
+    palavras?: number;
+    nome_corrigido?: string;
+    aplicadas?: number;
+    puladas?: string[];
+    corrigido_em?: string;
+    nome_final?: string;
+    concluida_por?: string;
+    concluida_em?: string;
+    observacao?: string;
+  } | null;
+  devolucao: { motivo: string; por: string; em: string } | null;
+};
+
+export type FilaProducao = { contagem: Record<EtapaMaterial, number>; itens: Material[] };
+
+export type MaterialRevisao = Material & { revisao: (NonNullable<Material["revisao"]> & { achados?: Achado[] | null }) | null };
+
+export type MeusMateriais = {
+  hoje: string;
+  prazo_horas: number;
+  tipos: string[];
+  turmas: { id: string; nome: string; turno: string }[];
+  itens: Material[];
+};
+
+// ---------- CPD ----------
+
+export type MateriaisRecebidos = {
+  pode_avaliar: boolean;
+  prazo_horas: number;
+  status: StatusMaterial[];
+  contagem: Record<StatusMaterial, number>;
+  itens: Material[];
+};
+
+export type Paginas = { pb: number; cor: number; total: number };
+
+export type Impressora = {
+  id: string;
+  nome: string;
+  modelo: string;
+  local: string;
+  colorida: boolean;
+  contadores: Paginas;
+  hoje: Paginas;
+  mes: Paginas;
+  toner: { cor: string; nivel: number }[];
+  alertas: string[];
+};
+
+export type Impressoras = { ultima_leitura: string; itens: Impressora[]; hoje: number; mes: number };
+
+export type Fechamento = {
+  mes: string;
+  rotulo: string;
+  mes_anterior: string | null;
+  mes_seguinte: string | null;
+  parcial: boolean;
+  impressoras: {
+    id: string;
+    nome: string;
+    inicial: Paginas;
+    final: Paginas;
+    consumo: Paginas;
+    contrato: { fixo: number; franquia: number; preco: number };
+    valor: number;
+    diario: number[];
+  }[];
+  totais: Paginas & { valor: number };
+  dias: { data: string; dia_semana: string; util: boolean; total: number }[];
+};
+
+// ---------- CGA ----------
+
+export type StatusAvaliacao = "Aguardando análise" | "Aprovada" | "Devolvida";
+
+export type AvaliacaoProfessor = {
+  id: string;
+  usuario_id: string;
+  professor: string;
+  tipo: string;
+  disciplina: string;
+  turma_id: string;
+  turma: string;
+  data: string;
+  observacao: string;
+  nome_arquivo: string;
+  enviado_em: string;
+  status: StatusAvaliacao;
+  parecer: string;
+  avaliado_por: string | null;
+  avaliado_em: string | null;
+};
+
+export type OpcoesCga = {
+  tipos: string[];
+  tamanhos: number[];
+  maximo: number;
+  disciplinas: string[];
+  turmas: { id: string; nome: string; turno: string }[];
+};
+
+export type MinhasAvaliacoes = OpcoesCga & { hoje: string; itens: AvaliacaoProfessor[] };
+
+export type AvaliacoesRecebidas = { contagem: Record<StatusAvaliacao, number>; itens: AvaliacaoProfessor[] };
+
+export type Prova = {
+  id: string;
+  titulo: string;
+  tipo: string;
+  data: string;
+  turmas: string[];
+  nomes_turmas: string[];
+  questoes: number;
+  alternativas: number;
+  gabarito: string;
+  criado_por: string;
+  criado_em: string;
+};
+
+export type ProvaResumo = Prova & { cartoes: number; pendentes: number; gabarito_completo: boolean };
+
+export type StatusLeitura = "Lido" | "Revisar" | "Conferido";
+
+export type Leitura = {
+  id: string;
+  prova_id: string;
+  nome_arquivo: string;
+  enviado_em: string;
+  enviado_por: string;
+  respostas: string[];
+  duvidas: number[];
+  matricula_lida: string | null;
+  matricula: string | null;
+  origem: "qr" | "bolinhas" | "manual" | null;
+  aluno_id: number | null;
+  aluno: string | null;
+  turma: string | null;
+  pendencias: string[];
+  status: StatusLeitura;
+  conferido_por: string | null;
+  acertos: number;
+  consideradas: number;
+  nota: number | null;
+};
+
+export type ProvaDetalhe = Prova & {
+  letras: string;
+  leituras: Leitura[];
+  questoes_analise: {
+    numero: number;
+    gabarito: string;
+    marcadas: Record<string, number>;
+    em_branco: number;
+    multiplas: number;
+    acerto: number | null;
+  }[];
+  resumo: { cartoes: number; revisar: number; conferidos: number; media: number | null; alunos_previstos: number };
+};
+
+export type LeituraDetalhe = {
+  prova: Pick<Prova, "id" | "titulo" | "questoes" | "alternativas" | "gabarito">;
+  letras: string;
+  leitura: Leitura;
+};
+
 // ---------- Painel de Controle ----------
 
 export type UsuarioAdmin = Usuario & { sessoes: number };
@@ -420,7 +629,7 @@ function mensagemDeErro(corpo: unknown, status: number): string {
 }
 
 /** Envia dados para a API (JSON ou FormData) e devolve sucesso ou a mensagem de erro. */
-async function enviar<T>(caminho: string, corpo?: unknown, metodo: "POST" | "PATCH" | "PUT" = "POST"): Promise<Resultado<T>> {
+async function enviar<T>(caminho: string, corpo?: unknown, metodo: "POST" | "PATCH" | "PUT" | "DELETE" = "POST"): Promise<Resultado<T>> {
   let res: Response;
   try {
     res = await fetch(new URL(caminho, API_URL), {
@@ -437,7 +646,7 @@ async function enviar<T>(caminho: string, corpo?: unknown, metodo: "POST" | "PAT
   return res.ok ? { ok: true, dados: json as T } : { ok: false, erro: mensagemDeErro(json, res.status) };
 }
 
-/** Repassa um arquivo da API para o navegador (termo .docx, atestado). */
+/** Repassa um arquivo da API para o navegador (termo .docx, atestado, material do CPD). */
 export async function repassarArquivo(caminho: string): Promise<Response> {
   const res = await fetch(new URL(caminho, API_URL), { headers: await autorizacao(), signal: AbortSignal.timeout(15000) });
   if (res.status === 401) return new Response("Sessão expirada. Entre novamente.", { status: 401 });
@@ -472,6 +681,24 @@ export const api = {
   funcionarios: () => get<Funcionario[]>("/api/rh/funcionarios"),
   espelho: (id: string, mes?: string) => get<Espelho>(`/api/rh/funcionarios/${encodeURIComponent(id)}`, { mes }),
 
+  comunicadosProfessores: () => get<ComunicadoProfessor[]>("/api/professores/comunicados"),
+  meusMateriais: () => get<MeusMateriais>("/api/professores/materiais"),
+
+  materiaisRecebidos: (status?: string) => get<MateriaisRecebidos>("/api/cpd/materiais", { status }),
+  diagramacao: (aba: string) => get<FilaProducao>("/api/cpd/diagramacao", { aba }),
+  filaRevisao: (aba: string) => get<FilaProducao>("/api/cpd/revisao", { aba }),
+  revisao: (id: string) => get<MaterialRevisao>(`/api/cpd/revisao/${encodeURIComponent(id)}`),
+  dicionario: () => get<string[]>("/api/cpd/revisao/dicionario"),
+  impressoras: () => get<Impressoras>("/api/cpd/impressoras"),
+  fechamento: (mes?: string) => get<Fechamento>("/api/cpd/fechamento", { mes }),
+
+  minhasAvaliacoes: () => get<MinhasAvaliacoes>("/api/professores/avaliacoes"),
+  opcoesCga: () => get<OpcoesCga>("/api/cga/opcoes"),
+  avaliacoesRecebidas: (status?: string) => get<AvaliacoesRecebidas>("/api/cga/avaliacoes", { status }),
+  provas: () => get<ProvaResumo[]>("/api/cga/provas"),
+  prova: (id: string) => get<ProvaDetalhe>(`/api/cga/provas/${encodeURIComponent(id)}`),
+  leitura: (id: string) => get<LeituraDetalhe>(`/api/cga/leituras/${encodeURIComponent(id)}`),
+
   adminResumo: () => get<ResumoAdmin>("/api/admin/resumo"),
   adminOpcoes: () => get<OpcoesAdmin>("/api/admin/opcoes"),
   usuarios: (filtros: Filtros) => get<UsuarioAdmin[]>("/api/admin/usuarios", filtros),
@@ -489,6 +716,24 @@ export const gravar = {
   ponto: (funcId: string) => enviar<{ horario: string }>(`/api/rh/funcionarios/${encodeURIComponent(funcId)}/ponto`),
   atestado: (funcId: string, corpo: FormData) => enviar<Atestado>(`/api/rh/funcionarios/${encodeURIComponent(funcId)}/atestados`, corpo),
   avaliarAtestado: (id: string, corpo: FormData) => enviar<Atestado>(`/api/rh/atestados/${encodeURIComponent(id)}/status`, corpo),
+  comunicadoProfessores: (corpo: unknown) => enviar<ComunicadoProfessor>("/api/professores/comunicados", corpo),
+  material: (corpo: FormData) => enviar<Material>("/api/professores/materiais", corpo),
+  avaliarMaterial: (id: string, corpo: FormData) => enviar<Material>(`/api/cpd/materiais/${encodeURIComponent(id)}/avaliacao`, corpo),
+  formatado: (id: string, corpo: FormData) => enviar<Material>(`/api/cpd/diagramacao/${encodeURIComponent(id)}`, corpo),
+  analisar: (id: string) => enviar<MaterialRevisao>(`/api/cpd/revisao/${encodeURIComponent(id)}/analise`),
+  corrigido: (id: string, escolhas: Record<string, string>) =>
+    enviar<{ aplicadas: number; puladas: string[]; nome: string }>(`/api/cpd/revisao/${encodeURIComponent(id)}/corrigido`, { escolhas }),
+  concluirRevisao: (id: string, corpo: FormData) => enviar<MaterialRevisao>(`/api/cpd/revisao/${encodeURIComponent(id)}/conclusao`, corpo),
+  devolverDiagramacao: (id: string, corpo: FormData) => enviar<MaterialRevisao>(`/api/cpd/revisao/${encodeURIComponent(id)}/devolucao`, corpo),
+  palavraDicionario: (palavra: string) => enviar<string[]>("/api/cpd/revisao/dicionario", { palavra }),
+
+  avaliacao: (corpo: FormData) => enviar<AvaliacaoProfessor>("/api/professores/avaliacoes", corpo),
+  parecerAvaliacao: (id: string, corpo: FormData) => enviar<AvaliacaoProfessor>(`/api/cga/avaliacoes/${encodeURIComponent(id)}/parecer`, corpo),
+  prova: (corpo: unknown) => enviar<Prova>("/api/cga/provas", corpo),
+  gabarito: (id: string, gabarito: string) => enviar<Prova>(`/api/cga/provas/${encodeURIComponent(id)}/gabarito`, { gabarito }, "PUT"),
+  lerCartao: (provaId: string, corpo: FormData) => enviar<Leitura>(`/api/cga/provas/${encodeURIComponent(provaId)}/leituras`, corpo),
+  corrigirLeitura: (id: string, corpo: unknown) => enviar<Leitura>(`/api/cga/leituras/${encodeURIComponent(id)}`, corpo, "PATCH"),
+  excluirLeitura: (id: string) => enviar<{ ok: true }>(`/api/cga/leituras/${encodeURIComponent(id)}`, undefined, "DELETE"),
 
   novoUsuario: (corpo: unknown) => enviar<Usuario>("/api/admin/usuarios", corpo),
   editarUsuario: (id: string, corpo: unknown) => enviar<Usuario>(`/api/admin/usuarios/${encodeURIComponent(id)}`, corpo, "PATCH"),

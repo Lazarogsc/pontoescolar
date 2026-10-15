@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { Kpi, Periodo, SituacaoMensalidade } from "@/lib/api";
+import type { Kpi, Periodo, SituacaoMensalidade, StatusAvaliacao, StatusLeitura, StatusMaterial } from "@/lib/api";
 import styles from "./ui.module.css";
 
 export { styles as ui };
@@ -70,6 +70,27 @@ export function Tag({ tom, children }: { tom: Tom; children: ReactNode }) {
   return <span className={`${styles.tag} ${COR_TOM[tom]}`}>{children}</span>;
 }
 
+const TOM_MATERIAL: Record<StatusMaterial, Tom> = { "Aguardando análise": "aviso", Aprovado: "ok", Reprovado: "alerta" };
+
+/** Situação do material enviado ao CPD (mesma etiqueta para o professor e para o CPD). */
+export function SituacaoMaterial({ valor }: { valor: StatusMaterial }) {
+  return <Tag tom={TOM_MATERIAL[valor]}>{valor}</Tag>;
+}
+
+const TOM_AVALIACAO: Record<StatusAvaliacao, Tom> = { "Aguardando análise": "aviso", Aprovada: "ok", Devolvida: "alerta" };
+
+/** Situação da avaliação enviada ao CGA (professor e CGA veem a mesma etiqueta). */
+export function SituacaoAvaliacao({ valor }: { valor: StatusAvaliacao }) {
+  return <Tag tom={TOM_AVALIACAO[valor]}>{valor}</Tag>;
+}
+
+const TOM_LEITURA: Record<StatusLeitura, Tom> = { Lido: "neutro", Revisar: "alerta", Conferido: "ok" };
+
+/** Situação de um cartão-resposta lido pelo CGA. */
+export function SituacaoLeitura({ valor }: { valor: StatusLeitura }) {
+  return <Tag tom={TOM_LEITURA[valor]}>{valor === "Revisar" ? "Conferir" : valor}</Tag>;
+}
+
 /** Ranking em barras horizontais, com o valor escrito ao lado (sem depender de cor). */
 export function Barras({
   itens,
@@ -137,10 +158,12 @@ export function FiltroPeriodo({ base, periodo, manter = {} }: { base: string; pe
   );
 }
 
-/** Mensagem de retorno de um formulário (sucesso ou erro). */
-export function Aviso({ tom, children }: { tom: "ok" | "erro"; children: ReactNode }) {
+const COR_AVISO = { ok: styles.avisoOk, erro: styles.avisoErro, atencao: styles.avisoAtencao };
+
+/** Mensagem de retorno de um formulário (sucesso, erro) ou um aviso fixo de atenção. */
+export function Aviso({ tom, children }: { tom: "ok" | "erro" | "atencao"; children: ReactNode }) {
   return (
-    <p className={tom === "ok" ? styles.avisoOk : styles.avisoErro} role={tom === "erro" ? "alert" : "status"}>
+    <p className={COR_AVISO[tom]} role={tom === "erro" ? "alert" : "status"}>
       {children}
     </p>
   );

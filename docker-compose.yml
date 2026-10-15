@@ -6,13 +6,26 @@ services:
   api:
     build: ./backend
     ports:
-      - "8002:8000"   # API em http://localhost:8002
+      # Só nesta máquina: o app fala com a API pela rede interna do Docker (http://api:8000) e
+      # ninguém de fora precisa chegar nela. Em produção, só o app fica exposto (atrás do HTTPS).
+      - "127.0.0.1:8002:8000"   # API em http://localhost:8002
     environment:
       CORS_ORIGINS: http://localhost:3002
       # Senha do superadmin "admin" criado no primeiro início (troca obrigatória no 1º acesso).
       ADMIN_SENHA: ${ADMIN_SENHA:-admin123}
+      # Corretor de português usado na revisão de materiais (sem IA)
+      LANGUAGETOOL_URL: http://revisor:8010
     volumes:
       - dados:/app/dados   # o que é cadastrado pela tela sobrevive a rebuilds
+    restart: on-failure
+
+  # LanguageTool 6.8 (código aberto): ortografia e gramática em português, roda aqui dentro.
+  # Fixado pelo digest para a versão não mudar sozinha. Usa ~1 GB de memória.
+  revisor:
+    image: erikvl87/languagetool@sha256:ef8fa12cbd485166c9ceeb7139d76d56d07707a624da6bb1fc1fbb5411750527
+    environment:
+      Java_Xms: 256m
+      Java_Xmx: 1g
     restart: on-failure
 
   app:

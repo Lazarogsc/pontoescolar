@@ -4,36 +4,36 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  padding: 20px 14px 16px;
-  background: var(--noite);
-  color: rgb(255 255 255 / 72%);
+  background: var(--branco);
+  border-right: 1px solid var(--borda);
+  color: var(--texto);
 }
 
+/* Mesma altura da barra superior, para as duas linhas de baixo se encontrarem */
 .marca {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 10px 16px;
-  color: var(--branco);
-  font-size: 17px;
-}
-
-.marca img {
-  background: var(--branco);
-  border-radius: 6px;
-  padding: 3px;
+  gap: 9px;
+  flex-shrink: 0;
+  min-height: 68px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--borda);
+  color: var(--noite);
+  font-size: 16px;
+  letter-spacing: -0.01em;
 }
 
 .sidebar nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 14px;
-  font-weight: 600;
+  gap: 18px;
+  padding: 18px 12px;
+  font-size: 13.5px;
+  font-weight: 500;
   overflow-y: auto;
   min-height: 0;
   scrollbar-width: thin;
-  scrollbar-color: rgb(255 255 255 / 18%) transparent;
+  scrollbar-color: var(--borda) transparent;
 }
 
 .sidebar nav > div {
@@ -45,35 +45,40 @@
 .itens {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
-/* Nome do setor: botão que abre e fecha o grupo */
+/* Nome do setor: botão que abre e fecha o grupo. A seta só aparece no hover ou com o grupo fechado. */
 .setor {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 5px 12px;
+  padding: 0 8px 6px;
   border: 0;
-  border-radius: 8px;
   background: none;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: rgb(255 255 255 / 46%);
+  color: var(--noite);
   cursor: pointer;
-  transition: color 0.2s, background 0.2s;
 }
 
 .setor:hover {
-  color: var(--branco);
-  background: rgb(255 255 255 / 6%);
+  color: var(--ponto);
 }
 
 .setor svg {
-  transition: transform 0.2s;
+  opacity: 0;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.setor:hover svg,
+.setor:focus-visible svg,
+.fechado .setor svg {
+  opacity: 1;
 }
 
 .fechado .setor svg {
@@ -84,57 +89,62 @@
   display: none;
 }
 
+/* Itens: menores e mais claros que o setor, recuados sob ele */
 .sidebar nav a {
-  padding: 6px 12px;
-  border-radius: 9px;
-  transition: background 0.2s, color 0.2s;
+  padding: 6px 8px 6px 18px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
 }
 
 .sidebar nav a:hover {
-  background: rgb(255 255 255 / 6%);
-  color: var(--branco);
+  background: var(--nevoa);
+  color: var(--noite);
 }
 
-.sidebar nav .ativo {
-  background: rgb(47 107 255 / 22%);
-  color: var(--branco);
-  box-shadow: inset 3px 0 0 var(--ponto);
+.sidebar nav .ativo,
+.sidebar nav .ativo:hover {
+  background: #edf0f5;
+  color: var(--noite);
+  font-weight: 700;
 }
 
 .carregando {
   display: block;
   height: 220px;
   margin: 0 8px;
-  border-radius: 10px;
-  background: linear-gradient(90deg, rgb(255 255 255 / 4%), rgb(255 255 255 / 9%), rgb(255 255 255 / 4%));
-  background-size: 200% 100%;
-  animation: brilho 1.4s infinite;
-}
-
-@keyframes brilho {
-  to {
-    background-position: -200% 0;
-  }
+  border-radius: 6px;
+  background: var(--nevoa);
 }
 
 .rodape {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  flex-direction: column;
+  gap: 2px;
   margin-top: auto;
-  padding: 12px 10px 0;
-  font-size: 11px;
+  padding: 14px 20px 16px;
+  border-top: 1px solid var(--borda);
+  font-size: 11.5px;
+  color: var(--texto-suave);
 }
 
-.badge {
-  align-self: flex-start;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: rgb(240 160 32 / 18%);
-  color: #ffc76b;
-  font-weight: 700;
-  white-space: nowrap;
+.rodape strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--aviso);
+  font-weight: 600;
+}
+
+.rodape strong::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f0a020;
 }
 
 @media (max-width: 960px) {
@@ -142,14 +152,18 @@
     min-width: 0;
     position: static;
     height: auto;
-    padding: 14px;
+    border-right: 0;
+    border-bottom: 1px solid var(--borda);
   }
   .marca {
-    padding: 0 4px 12px;
+    min-height: 56px;
+    padding: 0 16px;
+    border-bottom: 0;
   }
   .sidebar nav {
     flex-direction: row;
     gap: 4px;
+    padding: 0 12px 10px;
     overflow-x: auto;
   }
   .sidebar nav > div,
@@ -165,13 +179,11 @@
     display: flex;
   }
   .sidebar nav a {
+    padding-left: 8px;
     white-space: nowrap;
   }
-  .sidebar nav .ativo {
-    box-shadow: inset 0 -2px 0 var(--ponto);
-  }
   .carregando {
-    height: 36px;
+    height: 32px;
     width: 100%;
   }
   .rodape {

@@ -1,14 +1,15 @@
 ﻿# Inicia o ambiente completo do ponto.escolar.
 #
 #   start_escolar            pergunta o modo
-#   start_escolar local      API (uvicorn) e app (next dev) direto na máquina, com recarga automática
+#   start_escolar dev        containers com o código da pasta montado: recarrega ao salvar (recomendado)
 #   start_escolar docker     API e app em containers (docker compose), igual à produção
+#   start_escolar local      API (uvicorn) e app (next dev) direto na máquina, com recarga automática
 #
 # Em qualquer modo, antes de subir, libera as portas 3002 e 8002 seja quem for o dono:
 # containers do compose, containers de outros projetos e qualquer processo que esteja nelas.
 
 param(
-    [ValidateSet("", "local", "docker")]
+    [ValidateSet("", "dev", "docker", "local")]
     [string]$Modo = ""
 )
 
@@ -18,6 +19,7 @@ $Raiz = $PSScriptRoot
 $Backend = Join-Path $Raiz "backend"
 $Frontend = Join-Path $Raiz "frontend"
 $Compose = Join-Path $Raiz "docker-compose.yml"
+$ComposeDev = Join-Path $Raiz "docker-compose.dev.yml"
 # Portas próprias: 3000/8000 (Intranet) e 3001/8001 (site pontodevelop) ficam livres
 $PortaApi = 8002
 $PortaApp = 3002
@@ -143,7 +145,7 @@ function Parar-Containers {
 
 function Aguardar-App {
     Escrever "Aguardando o app ficar pronto..."
-    for ($i = 0; $i -lt 90; $i++) {
+    for ($i = 0; $i -lt 240; $i++) {
         try {
             Invoke-WebRequest "http://localhost:$PortaApp" -UseBasicParsing -TimeoutSec 2 | Out-Null
             return $true
@@ -157,33 +159,40 @@ function Aguardar-App {
 if (-not $Modo) {
     Write-Host ""
     Write-Host "  ponto.escolar - como deseja iniciar?" -ForegroundColor White
-    Write-Host "    [1] Local   (desenvolvimento, recarrega ao salvar)"
+    Write-Host "    [1] Dev     (Docker, recarrega ao salvar)"
     Write-Host "    [2] Docker  (containers, igual à produção)"
+    Write-Host "    [3] Local   (sem Docker, recarrega ao salvar)"
     Write-Host ""
     $escolha = Read-Host "  Opção [1]"
-    $Modo = if ($escolha -eq "2") { "docker" } else { "local" }
+    $Modo = switch ($escolha) { "2" { "docker" } "3" { "local" } default { "dev" } }
 }
 Escrever "Modo: $Modo" "White"
 
 # ---------- Encerrar execuções anteriores ----------
 
-if ($Modo -eq "docker") { Garantir-Docker }
+if ($Modo -ne "local") { Garantir-Docker }
 Parar-Containers
 Escrever "Liberando portas $PortaApi e $PortaApp..."
 Liberar-Porta $PortaApi
 Liberar-Porta $PortaApp
 
-# ---------- Modo Docker ----------
+# ---------- Modos Docker (dev e produção) ----------
 
-if ($Modo -eq "docker") {
-    Escrever "Construindo e iniciando os containers (a primeira vez demora alguns minutos)..." "Green"
+if ($Modo -ne "local") {
+    $Arquivos = if ($Modo -eq "dev") { @("-f", $Compose, "-f", $ComposeDev) } else { @("-f", $Compose) }
     $ErrorActionPreference = "Continue"
-    docker compose -f $Compose up -d --build
+    if ($Modo -eq "dev") {
+        Escrever "Iniciando os containers com recarga automática (a primeira vez instala as dependências)..." "Green"
+        docker compose @Arquivos up -d --build api app revisor
+    } else {
+        Escrever "Construindo e iniciando os containers (a primeira vez demora alguns minutos)..." "Green"
+        docker compose @Arquivos up -d --build
+    }
     # Uma porta recém-liberada pode levar alguns segundos para o Docker conseguir usá-la.
     for ($t = 0; $t -lt 2 -and $LASTEXITCODE -ne 0; $t++) {
         Escrever "Tentando novamente em 5 segundos..." "Yellow"
         Start-Sleep -Seconds 5
-        docker compose -f $Compose up -d --force-recreate
+        docker compose @Arquivos up -d --force-recreate
     }
     if ($LASTEXITCODE -ne 0) {
         Escrever "Falha ao subir os containers. Veja os erros acima." "Red"
@@ -193,10 +202,11 @@ if ($Modo -eq "docker") {
 
     if (Aguardar-App) { Start-Process "http://localhost:$PortaApp" }
 
-    Escrever "Tudo no ar (Docker)!" "Green"
+    Escrever "Tudo no ar ($Modo)!" "Green"
     Escrever "  App:  http://localhost:$PortaApp" "Green"
     Escrever "  API:  http://localhost:$PortaApi/docs" "Green"
     Escrever "Primeiro acesso: login 'admin', senha 'admin123' (o sistema pede para trocar)." "DarkGray"
+    if ($Modo -eq "dev") { Escrever "Alterações no código aparecem sozinhas: basta recarregar o navegador." "DarkGray" }
     Escrever "Logs:  docker compose logs -f     Parar:  docker compose down" "DarkGray"
     exit 0
 }

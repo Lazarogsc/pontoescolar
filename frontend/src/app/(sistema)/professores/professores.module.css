@@ -1,0 +1,54 @@
+.comunicados {
+  list-style: none;
+}
+
+.comunicados li {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 0;
+  border-top: 1px solid var(--borda);
+}
+
+.comunicados li:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.comunicados strong {
+  color: var(--marinho);
+  font-size: 15px;
+}
+
+.meta {
+  color: var(--texto-suave);
+  font-size: 12px;
+}
+
+.comunicados p {
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* Observação pode ser longa: quebra a linha em vez de alargar a tabela */
+.observacao {
+  min-width: 220px;
+  max-width: 360px;
+  white-space: normal;
+}
+
+.status {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.status select {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: var(--branco);
+  font-size: 13px;
+}

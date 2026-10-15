@@ -32,6 +32,34 @@ export const MENU: GrupoMenu[] = [
     ],
   },
   {
+    setor: "Professores",
+    modulos: ["professores", "professores_gestao"],
+    itens: [
+      { href: "/professores", rotulo: "Comunicados", exato: true },
+      { href: "/professores/materiais", rotulo: "Envio de material", modulos: ["professores"] },
+      { href: "/professores/avaliacoes", rotulo: "Envio de avaliação", modulos: ["professores"] },
+    ],
+  },
+  {
+    setor: "CPD",
+    modulos: ["cpd", "cpd_diagramacao", "cpd_revisao"],
+    itens: [
+      { href: "/cpd", rotulo: "Recebimento de material", exato: true, modulos: ["cpd"] },
+      { href: "/cpd/diagramacao", rotulo: "Diagramação", modulos: ["cpd_diagramacao", "cpd_coordenacao"] },
+      { href: "/cpd/revisao", rotulo: "Revisão de materiais", modulos: ["cpd_revisao", "cpd_coordenacao"] },
+      { href: "/cpd/impressoras", rotulo: "Impressoras", modulos: ["cpd"] },
+      { href: "/cpd/fechamento", rotulo: "Fechamento mensal", modulos: ["cpd"] },
+    ],
+  },
+  {
+    setor: "CGA",
+    modulos: ["cga"],
+    itens: [
+      { href: "/cga", rotulo: "Avaliações recebidas", exato: true },
+      { href: "/cga/provas", rotulo: "Provas e correção" },
+    ],
+  },
+  {
     setor: "Portais",
     modulos: ["portal", "familia", "meu_rh", "rh_gestao"],
     itens: [

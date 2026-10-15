@@ -487,7 +487,8 @@
 }
 
 .avisoOk,
-.avisoErro {
+.avisoErro,
+.avisoAtencao {
   padding: 10px 14px;
   border-radius: 10px;
   font-size: 14px;
@@ -502,6 +503,11 @@
 .avisoErro {
   background: var(--alerta-claro);
   color: var(--alerta);
+}
+
+.avisoAtencao {
+  background: var(--aviso-claro);
+  color: var(--aviso);
 }
 
 /* ---------- Destaques ---------- */

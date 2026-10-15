@@ -41,9 +41,9 @@ def eu(u: dict = Depends(usuario_logado)) -> dict:
 
 
 @router.post("/senha")
-def trocar_senha(form: SenhaForm, u: dict = Depends(usuario_logado)) -> dict:
+def trocar_senha(form: SenhaForm, u: dict = Depends(usuario_logado), token: str = Depends(token_da_requisicao)) -> dict:
     try:
-        usuarios.trocar_propria_senha(u, form.atual, form.nova)
+        usuarios.trocar_propria_senha(u, form.atual, form.nova, token)
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     return {"ok": True}

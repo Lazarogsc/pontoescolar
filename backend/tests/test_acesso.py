@@ -1,3 +1,7 @@
+import zipfile
+from datetime import date, timedelta
+from io import BytesIO
+
 from fastapi.testclient import TestClient
 
 from app import usuarios
@@ -42,7 +46,7 @@ def test_troca_de_senha_obrigatoria_no_primeiro_acesso():
 def test_permissoes_por_setor():
     professor = entrar_como("prof.teste", "Docentes", funcionario_id="F08")
     eu = professor.get("/api/auth/eu").json()
-    assert eu["modulos"] == ["meu_rh"]
+    assert eu["modulos"] == ["meu_rh", "professores"]
     assert professor.get("/api/painel").status_code == 403
     assert professor.get("/api/diretoria/resumo").status_code == 403
     assert professor.get("/api/admin/usuarios").status_code == 403
@@ -108,3 +112,34 @@ def test_configuracoes_da_escola():
 def test_admin_senha_padrao_ja_trocada():
     assert anonimo.post("/api/auth/login", json={"login": "admin", "senha": "admin123"}).status_code == 401
     assert anonimo.post("/api/auth/login", json={"login": "admin", "senha": ADMIN_SENHA}).status_code == 200
+
+
+def test_senha_antiga_sobe_para_600_mil_iteracoes_no_login():
+    entrar_como("hash.antigo", "Secretaria")
+    u = usuarios.por_login("hash.antigo")
+    # simula um usuário criado antes da mudança: 200 mil iterações e sem o campo "iteracoes"
+    u["senha_hash"] = usuarios._hash("Senha12345", u["sal"], usuarios.ITERACOES_ANTIGAS)
+    u.pop("iteracoes")
+    assert anonimo.post("/api/auth/login", json={"login": "hash.antigo", "senha": "Senha12345"}).status_code == 200
+    assert usuarios.por_login("hash.antigo")["iteracoes"] == usuarios.ITERACOES
+    assert anonimo.post("/api/auth/login", json={"login": "hash.antigo", "senha": "Senha12345"}).status_code == 200
+
+
+def test_trocar_a_senha_derruba_as_outras_sessoes():
+    entrar_como("duas.sessoes", "Secretaria")
+    t1 = anonimo.post("/api/auth/login", json={"login": "duas.sessoes", "senha": "Senha12345"}).json()["token"]
+    t2 = anonimo.post("/api/auth/login", json={"login": "duas.sessoes", "senha": "Senha12345"}).json()["token"]
+    aqui = TestClient(app, headers={"Authorization": f"Bearer {t1}"})
+    assert aqui.post("/api/auth/senha", json={"atual": "Senha12345", "nova": "Nova123456"}).status_code == 200
+    assert aqui.get("/api/auth/eu").status_code == 200  # quem trocou continua logado
+    assert TestClient(app, headers={"Authorization": f"Bearer {t2}"}).get("/api/auth/eu").status_code == 401
+
+
+def test_word_bomba_e_recusado():
+    bomba = BytesIO()
+    with zipfile.ZipFile(bomba, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("word/document.xml", b"0" * (90 * 1024 * 1024))  # 90 MB de zeros cabem em ~90 KB
+    prof = entrar_como("prof.bomba", "Docentes")
+    data = (date.today() + timedelta(days=10)).isoformat()
+    r = prof.post("/api/professores/materiais", data={"data": data, "turma": "6a"}, files={"arquivo": ("x.docx", bomba.getvalue())})
+    assert r.status_code == 422 and "80 MB" in r.json()["detail"]

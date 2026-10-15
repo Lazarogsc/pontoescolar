@@ -29,8 +29,8 @@ export function Sidebar() {
       </nav>
 
       <div className={styles.rodape}>
-        <span className={styles.badge}>Dados de exemplo</span>
-        <span>por pontodevelop</span>
+        <strong>Dados de exemplo</strong>
+        <span>pontodevelop</span>
       </div>
     </aside>
   );

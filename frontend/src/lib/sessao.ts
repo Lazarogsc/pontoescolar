@@ -7,7 +7,7 @@ export const DURACAO_SESSAO = 12 * 60 * 60; // segundos (igual à API)
 
 const API_URL = process.env.API_URL ?? "http://localhost:8002";
 
-export type Modulo = "secretaria" | "diretoria" | "portal" | "familia" | "meu_rh" | "rh_gestao" | "admin";
+export type Modulo = "secretaria" | "diretoria" | "portal" | "familia" | "meu_rh" | "rh_gestao" | "professores" | "professores_gestao" | "cpd" | "cpd_coordenacao" | "cpd_diagramacao" | "cpd_revisao" | "cga" | "admin";
 
 export type Usuario = {
   id: string;
@@ -56,6 +56,11 @@ export function telaInicial(u: Usuario) {
   if (pode(u, "diretoria")) return "/diretoria";
   if (pode(u, "portal")) return "/responsavel";
   if (pode(u, "familia")) return u.matriculas.length === 1 ? `/responsavel/${u.matriculas[0]}` : "/responsavel";
+  if (pode(u, "professores", "professores_gestao")) return "/professores";
+  if (pode(u, "cpd")) return "/cpd";
+  if (pode(u, "cpd_diagramacao")) return "/cpd/diagramacao";
+  if (pode(u, "cpd_revisao")) return "/cpd/revisao";
+  if (pode(u, "cga")) return "/cga";
   if (pode(u, "rh_gestao")) return "/meu-rh";
   if (pode(u, "meu_rh") && u.funcionario_id) return `/meu-rh/${u.funcionario_id}`;
   return "/perfil";

@@ -17,13 +17,14 @@ from datetime import datetime, timedelta
 
 from app import dados, estado
 
-ITERACOES = 200_000
+ITERACOES = 600_000  # PBKDF2-SHA256, recomendação OWASP; senhas antigas (200 mil) sobem no próximo login
+ITERACOES_ANTIGAS = 200_000
 DURACAO_SESSAO = timedelta(hours=12)
 MAX_TENTATIVAS = 5
 BLOQUEIO = timedelta(minutes=5)
 SENHA_MINIMA = 8
 
-SETORES = ["Diretoria", "Secretaria", "Financeiro", "Coordenação", "RH", "Docentes", "Serviços gerais", "Responsável"]
+SETORES = ["Diretoria", "Secretaria", "Financeiro", "Coordenação", "RH", "Docentes", "CPD", "Coordenação do CPD", "Diagramação", "Revisão", "CGA", "Serviços gerais", "Responsável"]
 PERFIS = ["superadmin", "usuario"]
 
 # O que cada setor enxerga. O superadmin enxerga tudo.
@@ -33,18 +34,30 @@ PERFIS = ["superadmin", "usuario"]
 #   familia     Portal do Responsável só dos alunos vinculados (pais)
 #   meu_rh      o próprio ponto e atestados
 #   rh_gestao   ponto e atestados de todos os funcionários
+#   professores         comunicados aos professores; envia material ao CPD e vê se foi aprovado
+#   professores_gestao  publica comunicados aos professores
+#   cpd                 material recebido dos professores, impressoras e fechamento mensal
+#   cpd_coordenacao     aprova ou reprova o material recebido (e acompanha diagramação e revisão)
+#   cpd_diagramacao     formata o material aprovado e envia o Word formatado
+#   cpd_revisao         revisa o texto do material formatado e libera para impressão
+#   cga                 avaliações dos professores, provas, gabaritos e correção dos cartões
 #   admin       Painel de Controle
 MODULOS_POR_SETOR = {
-    "Diretoria": ["secretaria", "diretoria", "portal", "meu_rh", "rh_gestao"],
+    "Diretoria": ["secretaria", "diretoria", "portal", "meu_rh", "rh_gestao", "professores_gestao", "cpd", "cga"],
     "Secretaria": ["secretaria", "portal", "meu_rh"],
     "Financeiro": ["secretaria", "diretoria", "meu_rh"],
-    "Coordenação": ["secretaria", "portal", "meu_rh"],
+    "Coordenação": ["secretaria", "portal", "meu_rh", "professores_gestao"],
     "RH": ["meu_rh", "rh_gestao"],
-    "Docentes": ["meu_rh"],
+    "Docentes": ["meu_rh", "professores"],
+    "CPD": ["meu_rh", "cpd"],
+    "Coordenação do CPD": ["meu_rh", "cpd", "cpd_coordenacao"],
+    "Diagramação": ["meu_rh", "cpd_diagramacao"],
+    "Revisão": ["meu_rh", "cpd_revisao"],
+    "CGA": ["meu_rh", "cga"],
     "Serviços gerais": ["meu_rh"],
     "Responsável": ["familia"],
 }
-TODOS_MODULOS = ["secretaria", "diretoria", "portal", "meu_rh", "rh_gestao", "admin"]
+TODOS_MODULOS = ["secretaria", "diretoria", "portal", "meu_rh", "rh_gestao", "professores", "professores_gestao", "cpd", "cpd_coordenacao", "cpd_diagramacao", "cpd_revisao", "cga", "admin"]
 
 _tentativas: dict[str, list] = {}
 
@@ -56,17 +69,23 @@ class ErroLogin(Exception):
 # ---------- Senhas ----------
 
 
-def _hash(senha: str, sal: str) -> str:
-    return hashlib.pbkdf2_hmac("sha256", senha.encode(), bytes.fromhex(sal), ITERACOES).hex()
+def _hash(senha: str, sal: str, iteracoes: int = ITERACOES) -> str:
+    return hashlib.pbkdf2_hmac("sha256", senha.encode(), bytes.fromhex(sal), iteracoes).hex()
 
 
 def gerar_hash(senha: str) -> dict:
     sal = secrets.token_hex(16)
-    return {"sal": sal, "senha_hash": _hash(senha, sal)}
+    return {"sal": sal, "senha_hash": _hash(senha, sal), "iteracoes": ITERACOES}
 
 
 def conferir(usuario: dict, senha: str) -> bool:
-    return hmac.compare_digest(_hash(senha, usuario["sal"]), usuario["senha_hash"])
+    iteracoes = usuario.get("iteracoes", ITERACOES_ANTIGAS)
+    return hmac.compare_digest(_hash(senha, usuario["sal"], iteracoes), usuario["senha_hash"])
+
+
+# Hash de mentira para login inexistente: a resposta demora o mesmo que uma senha errada,
+# então não dá para descobrir quais logins existem pelo tempo de resposta.
+_FALSO = {"sal": "00" * 16, "senha_hash": "", "iteracoes": ITERACOES}
 
 
 def validar_senha(senha: str) -> None:
@@ -247,13 +266,15 @@ def definir_senha(usuario_id: str, nova: str, autor: dict, trocar_no_proximo: bo
     registrar(autor, "Redefiniu senha", f"{u['nome']} ({u['login']})")
 
 
-def trocar_propria_senha(u: dict, atual: str, nova: str) -> None:
+def trocar_propria_senha(u: dict, atual: str, nova: str, token_atual: str = "") -> None:
+    """Troca a senha e derruba as outras sessões abertas (ex.: num computador esquecido logado)."""
     if not conferir(u, atual):
         raise ValueError("A senha atual está incorreta.")
     if atual == nova:
         raise ValueError("A nova senha precisa ser diferente da atual.")
     validar_senha(nova)
     estado.alterar("usuarios", u["id"], {**gerar_hash(nova), "trocar_senha": False})
+    encerrar_sessoes(u["id"], manter=token_atual)
     registrar(u, "Trocou a própria senha", "")
 
 
@@ -267,14 +288,19 @@ def _hash_token(token: str) -> str:
 def entrar(login: str, senha: str) -> tuple[str, dict]:
     chave = login.strip().lower()
     agora = datetime.now()
+    if len(_tentativas) > 5_000:  # não deixa a lista de tentativas crescer sem fim
+        for k in [k for k, ts in _tentativas.items() if all(agora - t >= BLOQUEIO for t in ts)]:
+            del _tentativas[k]
     falhas = [t for t in _tentativas.get(chave, []) if agora - t < BLOQUEIO]
     if len(falhas) >= MAX_TENTATIVAS:
         raise ErroLogin("Muitas tentativas erradas. Aguarde 5 minutos e tente de novo.")
 
     u = por_login(chave)
-    if u is None or not conferir(u, senha):
+    if not conferir(u or _FALSO, senha) or u is None:
         _tentativas[chave] = falhas + [agora]
         raise ErroLogin("Login ou senha incorretos.")
+    if u.get("iteracoes", ITERACOES_ANTIGAS) < ITERACOES:  # atualiza o hash antigo agora que temos a senha
+        estado.alterar("usuarios", u["id"], gerar_hash(senha))
     if not u["ativo"]:
         raise ErroLogin("Este usuário está desativado. Procure o administrador do sistema.")
 
@@ -309,9 +335,11 @@ def sair(token: str) -> None:
     estado.remover("sessoes", _hash_token(token))
 
 
-def encerrar_sessoes(usuario_id: str) -> None:
+def encerrar_sessoes(usuario_id: str, manter: str = "") -> None:
+    """Encerra as sessões do usuário (menos a do token `manter`, se informado)."""
+    preservar = _hash_token(manter) if manter else None
     for h, s in list(estado.ler("sessoes").items()):
-        if s["usuario_id"] == usuario_id:
+        if s["usuario_id"] == usuario_id and h != preservar:
             estado.remover("sessoes", h)
 
 

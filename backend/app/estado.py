@@ -12,7 +12,7 @@ from pathlib import Path
 
 _COLECOES = (
     "matriculas", "pagamentos", "vendas", "compras", "compras_pagas", "batidas", "atestados",
-    "usuarios", "sessoes", "atividades", "config",
+    "usuarios", "sessoes", "atividades", "config", "materiais", "comunicados_professores", "avaliacoes", "provas", "leituras",
 )
 _DICIONARIOS = ("pagamentos", "compras_pagas", "batidas", "sessoes", "config")
 _trava = threading.RLock()
@@ -78,6 +78,17 @@ def alterar(colecao: str, registro_id: str, campos: dict) -> dict | None:
         registro = next((r for r in _carregar()[colecao] if r["id"] == registro_id), None)
         if registro is not None:
             registro.update(campos)
+            _salvar()
+        return registro
+
+
+def excluir(colecao: str, registro_id: str) -> dict | None:
+    """Tira um registro (pelo `id`) de uma coleção em lista e devolve o que foi tirado."""
+    with _trava:
+        lista = _carregar()[colecao]
+        registro = next((r for r in lista if r["id"] == registro_id), None)
+        if registro is not None:
+            lista.remove(registro)
             _salvar()
         return registro
 

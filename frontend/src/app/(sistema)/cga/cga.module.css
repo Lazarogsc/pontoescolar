@@ -1,0 +1,247 @@
+/* ---------- Listas ---------- */
+.sub {
+  display: block;
+  margin-top: 2px;
+  color: var(--texto-suave);
+  font-size: 12px;
+  white-space: normal;
+}
+
+.texto {
+  min-width: 180px;
+  max-width: 300px;
+  white-space: normal;
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  max-width: 380px;
+}
+
+.acoes input {
+  flex: 1 1 180px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.erro {
+  flex-basis: 100%;
+  color: var(--alerta);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: normal;
+}
+
+.erroTexto {
+  color: var(--alerta);
+  font-weight: 600;
+}
+
+/* ---------- Nova prova ---------- */
+.turmas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  border: 0;
+  padding: 0;
+}
+
+.turmas legend {
+  margin-bottom: 6px;
+}
+
+.turmas label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+/* ---------- Prova ---------- */
+.downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+
+.emBranco {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--borda);
+  font-size: 13px;
+}
+
+.emBranco label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.emBranco input {
+  width: 72px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+}
+
+.envio {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.envio input {
+  flex: 1 1 260px;
+  font-size: 14px;
+}
+
+.acerto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trilho {
+  display: block;
+  width: 90px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--nevoa);
+  overflow: hidden;
+}
+
+.trilho span {
+  display: block;
+  height: 100%;
+  background: var(--ponto);
+}
+
+.trilho .baixo {
+  background: var(--alerta);
+}
+
+.certa {
+  font-weight: 800;
+  color: var(--sucesso);
+}
+
+/* ---------- Conferência de um cartão ---------- */
+.conferencia {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.legenda {
+  margin-bottom: 12px;
+  color: var(--texto-suave);
+  font-size: 13px;
+}
+
+.verde {
+  color: #3ca028;
+  font-weight: 700;
+}
+
+.laranja {
+  color: #e08a00;
+  font-weight: 700;
+}
+
+.vermelho {
+  color: #dc2828;
+  font-weight: 700;
+}
+
+.recorte {
+  display: block;
+  width: 100%;
+  margin-bottom: 12px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+}
+
+.folha {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+}
+
+.respostas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 4px 10px;
+}
+
+.resposta {
+  display: grid;
+  grid-template-columns: 24px 1fr 18px;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.resposta select {
+  height: 28px;
+  padding: 0 4px;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  background: var(--branco);
+  font-size: 13px;
+}
+
+.emDuvida {
+  background: var(--aviso-claro);
+  outline: 2px solid #f0a020;
+}
+
+.acertou {
+  color: var(--sucesso);
+  font-weight: 700;
+}
+
+.errou {
+  color: var(--alerta);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.botoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.excluir {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--borda);
+}
+
+@media (max-width: 1100px) {
+  .conferencia {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

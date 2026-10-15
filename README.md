@@ -9,11 +9,24 @@ Sistema de **gestão escolar** da [pontodevelop](https://www.instagram.com/ponto
 - **Portal do Responsável:** notas, provas, entrega de atividades, frequência e mensalidades do aluno.
 - **Meu RH:** cada funcionário registra o ponto e acompanha espelho, horas extras, banco de horas e atestados;
   a gestão de RH aprova ou recusa atestados.
+- **Professores:** comunicados da coordenação/direção para os docentes e envio de material para impressão
+  (data, turma, observação e arquivo Word ou PDF), com aviso do prazo de 48 horas úteis.
+- **CPD:** recebimento do material dos professores (a coordenação do CPD aprova ou reprova, e o professor vê o
+  resultado), **diagramação** (pendentes e formatados: o diagramador envia o Word formatado), **revisão de
+  materiais** (ortografia e gramática com o LanguageTool, sem IA, e Word corrigido em "Controlar alterações"),
+  impressoras (contadores, toner, consumo do dia e do mês) e fechamento mensal com valor estimado
+  pelo contrato. As leituras das impressoras são simuladas por enquanto (`backend/app/cpd.py`).
+- **CGA:** recebe as avaliações dos professores (mensal, bimestral, simulado…) e dá parecer; cadastra provas de
+  1 a 90 questões com gabarito; gera os cartões-resposta em PDF (personalizados por aluno ou em branco) e lê os
+  cartões escaneados (JPG/PNG), achando o aluno pelo QR code ou pela matrícula marcada, com nota e análise por
+  questão. Veja [Cartão-resposta e leitura](#cartão-resposta-e-leitura-cga).
 - **Painel de Controle (superadmin):** usuários, setores, senhas, desativação, configurações da escola e registro
   de atividades.
 
+> **Documentação técnica completa:** [docs/DOCUMENTACAO_TECNICA.md](docs/DOCUMENTACAO_TECNICA.md) (arquitetura, permissões, API, CGA, revisão, segurança e checklist de produção).
+
 > **Em desenvolvimento.** Os dados de exemplo são gerados em `backend/app/dados.py` (mesma semente a cada início).
-> Tudo que é cadastrado pela tela (usuários, matrículas, pagamentos, vendas, compras, pontos e atestados) é gravado
+> Tudo que é cadastrado pela tela (usuários, matrículas, pagamentos, vendas, compras, pontos, atestados, comunicados, material do CPD, provas e cartões lidos) é gravado
 > em `backend/dados/estado.json` (ou em `DADOS_DIR`). Banco de dados vem numa próxima etapa; notas e atividades
 > dos alunos de exemplo são simuladas até o Diário lançar notas de verdade.
 
@@ -26,12 +39,18 @@ O **setor** define o que cada pessoa vê (o superadmin vê tudo):
 
 | Setor           | Acessa                                                                   |
 | --------------- | ------------------------------------------------------------------------ |
-| Diretoria       | Secretaria, Diretoria, Portal do Responsável (todos), Meu RH, Gestão de RH |
+| Diretoria       | Secretaria, Diretoria, Portal do Responsável (todos), Meu RH, Gestão de RH, publica comunicados aos professores, CPD (sem aprovar), CGA |
 | Secretaria      | Secretaria, Portal do Responsável (todos), Meu RH                        |
 | Financeiro      | Secretaria, Diretoria, Meu RH                                            |
-| Coordenação     | Secretaria, Portal do Responsável (todos), Meu RH                        |
+| Coordenação     | Secretaria, Portal do Responsável (todos), Meu RH, publica comunicados aos professores |
 | RH              | Meu RH, Gestão de RH                                                     |
-| Docentes, Serviços gerais | Meu RH                                                         |
+| Docentes        | Meu RH, Professores (comunicados e envio de material ao CPD)             |
+| CPD             | Meu RH, CPD (material recebido, impressoras e fechamento)                |
+| Coordenação do CPD | Meu RH, CPD e aprovação/reprovação do material; acompanha diagramação e revisão |
+| Diagramação     | Meu RH, Diagramação (material aprovado para formatar)                    |
+| Revisão         | Meu RH, Revisão de materiais                                             |
+| CGA             | Meu RH, CGA (avaliações, provas, cartões e correção)                     |
+| Serviços gerais | Meu RH                                                                   |
 | Responsável     | Portal do Responsável, só dos filhos vinculados ao usuário               |
 
 - A permissão é conferida **na API** em cada rota; o app só esconde o que a pessoa não pode usar.
@@ -75,9 +94,14 @@ podem rodar ao mesmo tempo.
 **Jeito rápido (Windows):** dê dois cliques em `start_escolar.bat` e escolha o modo, ou passe direto:
 
 ```
-start_escolar local     # API e app na máquina, recarregam ao salvar (desenvolvimento)
+start_escolar dev       # containers com o código da pasta montado: recarregam ao salvar (padrão)
 start_escolar docker    # API e app em containers, igual à produção
+start_escolar local     # API e app na máquina, sem Docker, recarregam ao salvar
 ```
+
+No modo `dev` (`docker-compose.dev.yml`), cada arquivo salvo em `frontend/src` ou `backend/app` entra
+no ar sozinho: basta recarregar o navegador. Só é preciso reiniciar ao mudar dependências
+(`package.json`, `requirements.txt`) ou o próprio compose.
 
 Em qualquer modo, ele primeiro encerra o que o projeto deixou rodando (containers do compose e
 processos `node`/`python` nas portas 3002/8002). Se outro programa estiver usando a porta, ele avisa e
@@ -93,6 +117,8 @@ docker compose up -d --build   # sobe
 docker compose logs -f         # acompanha os logs
 docker compose down            # para
 ```
+
+Com recarga automática: `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d`.
 
 **Local manualmente:**
 
@@ -150,6 +176,20 @@ Os filtros de período aceitam `periodo` (`hoje`, `7d`, `mes`, `ano`) ou `de`/`a
 | `POST /api/rh/funcionarios/{id}/ponto`               | Registra o ponto agora                              |
 | `POST /api/rh/funcionarios/{id}/atestados`           | Envia atestado (PDF, JPG ou PNG até 5 MB)           |
 | `POST /api/rh/atestados/{id}/status`                 | Gestão de RH aprova ou recusa um atestado           |
+| `GET/POST /api/professores/comunicados`              | Comunicados aos professores (publicar: coordenação/direção) |
+| `GET/POST /api/professores/materiais`                | Material do professor para o CPD (Word ou PDF até 5 MB) |
+| `GET /api/cpd/materiais?status=`                     | Material recebido pelo CPD                          |
+| `POST /api/cpd/materiais/{id}/avaliacao`             | Coordenação do CPD aprova ou reprova (reprovar exige motivo) |
+| `GET /api/cpd/impressoras`                           | Contadores, toner e consumo de hoje e do mês        |
+| `GET /api/cpd/fechamento?mes=AAAA-MM`                | Fechamento mensal por impressora e consumo diário   |
+| `GET/POST /api/professores/avaliacoes`               | Avaliação do professor para o CGA (Word ou PDF)     |
+| `GET /api/cga/avaliacoes`, `POST …/{id}/parecer`     | CGA aprova ou devolve (devolver exige parecer)      |
+| `GET/POST /api/cga/provas`, `GET /api/cga/provas/{id}` | Provas, cartões lidos e análise por questão       |
+| `PUT /api/cga/provas/{id}/gabarito`                  | Gabarito (A–E, `*` anula, `-` sem resposta)         |
+| `GET /api/cga/provas/{id}/cartoes?turma=&em_branco=` | PDF dos cartões-resposta                            |
+| `POST /api/cga/provas/{id}/leituras`                 | Lê um cartão escaneado (JPG/PNG até 10 MB)          |
+| `GET/PATCH/DELETE /api/cga/leituras/{id}`            | Cartão lido: conferir, corrigir, excluir            |
+| `GET /api/cga/leituras/{id}/imagem?tipo=`            | `conferencia`, `nome` (recorte) ou `original`       |
 | `POST /api/auth/login`, `/api/auth/logout`           | Entrar e sair                                       |
 | `GET /api/auth/eu`, `POST /api/auth/senha`           | Usuário logado e troca da própria senha             |
 | `GET/POST /api/admin/usuarios`, `PATCH /api/admin/usuarios/{id}` | Usuários (superadmin)                   |
@@ -166,3 +206,42 @@ Todas as rotas, menos `/api/health` e `/api/auth/login`, exigem sessão.
 cd backend && python -m pytest      # API
 cd frontend && npm run build        # tipos + build do app
 ```
+
+## Cartão-resposta e leitura (CGA)
+
+O cartão é o modelo **SJ1** (`backend/app/cartao.py` define a posição de tudo; o PDF e o leitor usam a mesma
+geometria). Até 90 questões A–E em até 5 colunas de 18 linhas (15 → 1×15, 36 → 2×18, 45 → 3×15, 72 → 4×18,
+90 → 5×18) e matrícula de 8 dígitos em bolinhas.
+
+- **Cantos:** 4 marcadores ArUco. O leitor acha a folha torta, com zoom diferente ou de cabeça para baixo.
+- **Identificação:** o cartão personalizado traz o QR code com a matrícula e as bolinhas da matrícula já
+  preenchidas; no cartão em branco o aluno marca a matrícula. O nome escrito à mão **não é lido por OCR**
+  (erra demais): o recorte dele aparece na conferência para o CGA olhar.
+- **Sem chute:** marca forte e única é resposta; nada é em branco; duas fortes é dupla marcação. Marca fraca,
+  rasura, matrícula pela metade, aluno de outra turma, cartão repetido ou de outra prova viram **pendência**:
+  o cartão fica "Conferir" e não entra na análise até o CGA confirmar na tela (com a imagem destacada).
+- **Testes:** `tests/simulador.py` preenche o PDF de verdade como caneta e "escaneia" (giro, ponta-cabeça,
+  zoom, perspectiva, papel cinza, desfoque, ruído, JPG de 150 a 300 dpi). Num lote de 300 cartões
+  (27.000 questões) não houve resposta nem matrícula lida errada, e toda rasura virou pendência.
+- **Escaneamento recomendado:** folha inteira (os 4 cantos aparecendo), 200 dpi, tons de cinza, JPG.
+
+Os limites de marcação (`MARCADA`, `FRACA`, `CLARA` em `backend/app/leitor.py`) foram calibrados no
+simulador. Antes de usar para valer, rode um lote de cartões reais da escola (scanner e caneta de
+verdade) e confira na tela.
+
+## Diagramação e revisão de materiais (CPD)
+
+Material aprovado pela coordenação do CPD passa por **Diagramação → Revisão → Pronto para impressão**, e o
+professor acompanha a etapa na tela dele.
+
+- **Diagramação:** abas *Pendentes* (baixa o original do professor) e *Formatados*. O diagramador envia o
+  Word (.docx) ou PDF formatado e o material vai para a revisão.
+- **Revisão (sem IA):** o serviço `revisor` do compose é o [LanguageTool](https://languagetool.org) 6.8,
+  código aberto, rodando no próprio servidor (nada sai da escola; usa ~1 GB de memória). Ele aponta
+  ortografia, concordância, crase, regência e pontuação. Como erra às vezes (falso alarme e erro que passa),
+  o revisor aceita ou recusa cada sugestão e o sistema gera um **Word com "Controlar alterações"**, mantendo
+  a formatação do diagramador. PDF não dá para editar no lugar: sai um Word com o texto extraído e as
+  correções marcadas. Nomes próprios e termos técnicos vão para o dicionário da escola.
+- **Devolução:** o revisor pode devolver à diagramação com o motivo.
+- **Rodando fora do Docker** (modo local), a revisão precisa de um LanguageTool em `LANGUAGETOOL_URL`
+  (padrão `http://localhost:8010`).

@@ -192,6 +192,46 @@ COMUNICADOS = [
 ]
 
 
+# Comunicados aos professores (as datas acompanham o calendário: "dias_atras" de hoje)
+COMUNICADOS_PROFESSORES = [
+    {
+        "titulo": "Prazo de lançamento das notas do 4º bimestre",
+        "texto": "As notas e frequências do 4º bimestre devem ser lançadas no diário até o dia 05/12. Dúvidas, procurar a coordenação.",
+        "autor": "Coordenação pedagógica",
+        "dias_atras": 1,
+    },
+    {
+        "titulo": "Impressão de provas e atividades",
+        "texto": "Envie as atividades para impressão pela tela de Solicitações com pelo menos 2 dias úteis de antecedência, informando a turma e a data de aplicação.",
+        "autor": "Coordenação pedagógica",
+        "dias_atras": 6,
+    },
+    {
+        "titulo": "Conselho de classe",
+        "texto": "O conselho de classe do Fundamental II será na terça, às 14h, na sala dos professores. Traga o resumo de cada turma.",
+        "autor": "Direção",
+        "dias_atras": 9,
+    },
+]
+
+
+# Impressoras do CPD (simuladas: os contadores andam com o calendário, ver cpd.py).
+# media_dia = páginas num dia letivo; cor = fração colorida; contrato = locação mensal:
+# valor fixo + páginas acima da franquia × preço.
+IMPRESSORAS = [
+    {"id": "hp2", "nome": "HP2", "modelo": "HP PageWide MFP P57750", "local": "CPD", "colorida": True,
+     "base": 182_400, "media_dia": 620, "cor": 0.18, "contrato": {"fixo": 390.0, "franquia": 12_000, "preco": 0.09}},
+    {"id": "hp3", "nome": "HP3", "modelo": "HP PageWide MFP P57750", "local": "CPD", "colorida": True,
+     "base": 154_900, "media_dia": 540, "cor": 0.15, "contrato": {"fixo": 390.0, "franquia": 12_000, "preco": 0.09}},
+    {"id": "hp6", "nome": "HP6", "modelo": "HP PageWide MFP P57750", "local": "Coordenação", "colorida": True,
+     "base": 98_300, "media_dia": 260, "cor": 0.22, "contrato": {"fixo": 390.0, "franquia": 12_000, "preco": 0.09}},
+    {"id": "hp7", "nome": "HP7", "modelo": "HP PageWide Pro 477dw MFP", "local": "Secretaria", "colorida": True,
+     "base": 61_750, "media_dia": 140, "cor": 0.10, "contrato": {"fixo": 210.0, "franquia": 4_000, "preco": 0.12}},
+    {"id": "wilker", "nome": "WILKER", "modelo": "Epson WF-C5810", "local": "Sala dos professores", "colorida": True,
+     "base": 43_120, "media_dia": 180, "cor": 0.30, "contrato": {"fixo": 250.0, "franquia": 5_000, "preco": 0.11}},
+]
+
+
 # ---------- Geração ----------
 
 def _data_matricula(rnd: Random) -> date:

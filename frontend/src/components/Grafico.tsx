@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import styles from "./Grafico.module.css";
 
 export type SerieGrafico = {
@@ -18,12 +18,13 @@ type Props = {
   series: SerieGrafico[];
   tipo?: "barras" | "linha";
   formato?: Formato;
+  /** Altura em pixels (a largura acompanha o card). */
   altura?: number;
   /** Escala fixa (ex.: notas de 0 a 10). */
   maximo?: number;
 };
 
-const W = 640;
+const LARGURA_INICIAL = 640; // antes de medir (renderização no servidor)
 const ESQ = 56;
 const TOPO = 14;
 const BASE = 26;
@@ -63,6 +64,18 @@ function barra(x: number, y: number, w: number, base: number) {
 export function Grafico({ titulo, rotulos, series, tipo = "barras", formato = "numero", altura = 240, maximo }: Props) {
   const [ativo, setAtivo] = useState<number | null>(null);
   const idTabela = useId();
+  // Desenha na largura real do card (medida no navegador): texto sempre do mesmo tamanho e
+  // altura fixa, em vez de esticar a proporção e ficar enorme num card de página inteira.
+  const area = useRef<HTMLDivElement>(null);
+  const [medida, setMedida] = useState(0);
+  useEffect(() => {
+    const el = area.current;
+    if (!el) return;
+    const observador = new ResizeObserver(([e]) => setMedida(Math.round(e.contentRect.width)));
+    observador.observe(el);
+    return () => observador.disconnect();
+  }, []);
+  const W = medida || LARGURA_INICIAL;
   const H = altura;
   const valores = series.flatMap((s) => s.valores.filter((v): v is number => v !== null));
   const minimoDados = Math.min(0, ...valores);
@@ -76,7 +89,7 @@ export function Grafico({ titulo, rotulos, series, tipo = "barras", formato = "n
   const n = rotulos.length;
   const coluna = (W - ESQ) / Math.max(n, 1);
   const cx = (i: number) => ESQ + i * coluna + coluna / 2;
-  const passoRotulo = Math.ceil(n / 8);
+  const passoRotulo = Math.ceil(n / Math.max(8, Math.floor(W / 80))); // ~1 rótulo a cada 80 de largura
   const vazio = valores.every((v) => v === 0) || valores.length === 0;
   const zero = y(0);
 
@@ -85,7 +98,7 @@ export function Grafico({ titulo, rotulos, series, tipo = "barras", formato = "n
 
   return (
     <figure className={styles.figura}>
-      <div className={styles.area}>
+      <div className={styles.area} ref={area}>
         <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={titulo} aria-describedby={idTabela} onMouseLeave={() => setAtivo(null)}>
           {/* Grade e eixo Y recessivos */}
           {marcas.map((v) => {
